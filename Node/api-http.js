@@ -1,5 +1,33 @@
 const Node = require('bridg-wrong');
 const Hapi = require('hapi');
+const Inert = require('inert');
+const Vision = require('vision');
+const Boom = require('boom');
+const Joi = require('joi');
+const HapiSwagger = require('hapi-swagger');
+const swaggerOptions = {
+    info: {
+        title: 'Test API Documentation',
+        version: require('../package').version
+    }
+};
+
+const validation = {
+    payload: {
+        jsonrpc: Joi.any().valid('2.0').required(),
+        id: Joi.number().positive().example(1),
+        meta: Joi.object().required(),
+        method: Joi.string().required(),
+        params: Joi.object().required()
+    },
+    failAction: (request, h, err) => {
+        if (err) {
+            console.error(err);
+            throw Boom.badRequest('ValidationError');
+        }
+        throw err;
+    }
+};
 
 class ApiHttp extends Node {
     constructor({httpApiPort = 80} = {}) {
@@ -20,7 +48,10 @@ class ApiHttp extends Node {
                 server.route({
                     method: '*',
                     path: '/JSONRPC/{method*}',
-                    handler: (request, h) => ({id: -1, error: 'MethodNotFound'})
+                    options: {
+                        tags: ['api'],
+                        handler: (request, h) => ({id: -1, error: 'MethodNotFound'})
+                    }
                 });
                 this.apiRoutes.map(({methodName, ...route}) => server.route(Object.assign({
                     method: 'POST',
@@ -29,10 +60,21 @@ class ApiHttp extends Node {
                         return this.apiRequestReceived({message: {}, meta: {method: methodName}})
                             .then((response = 'empty') => ({response: response}))
                             .catch(() => ({error: true}));
+                    },
+                    options: {
+                        tags: ['api'],
+                        validate: validation
                     }
                 }, route)));
                 server.events.on('start', resolve);
-                server.start();
+                return server.register([
+                    Inert,
+                    Vision,
+                    {
+                        plugin: HapiSwagger,
+                        options: swaggerOptions
+                    }
+                ]).then(() => server.start());
             })))
             .then(() => console.log('api-http ready', this.configApi.httpServer))
             .then(() => (this.configApi.httpServer));

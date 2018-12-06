@@ -1,8 +1,14 @@
 {
+    "version": "0.0.1",
     "dependencies": {
         "bridg-wrong": "*",
         "hapi": "*",
         "dns-discovery": "*",
-        "mdns-resolver": "*"
+        "inert": "*",
+        "vision": "*",
+        "joi": "*",
+        "hapi-swagger": "*",
+        "mdns-resolver": "*",
+        "boom": "*"
     }
 }
