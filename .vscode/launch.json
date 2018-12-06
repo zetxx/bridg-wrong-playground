@@ -1,0 +1,38 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "test resolver",
+            "program": "${workspaceFolder}/discovery/test-resolver.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Node 1",
+            "program": "${workspaceFolder}/Node1/index.js",
+            "env": {
+                "NODE_PATH": "${workspaceRoot}/dev/"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Node 2",
+            "program": "${workspaceFolder}/Node2/index.js",
+            "env": {
+                "NODE_PATH": "${workspaceRoot}/dev/"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Node 1 + Node 2",
+            "configurations": ["Node 1", "Node 2"]
+        }
+    ]
+}

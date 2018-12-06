@@ -1,0 +1,8 @@
+{
+    "dependencies": {
+        "bridg-wrong": "*",
+        "hapi": "*",
+        "dns-discovery": "*",
+        "mdns-resolver": "*"
+    }
+}
