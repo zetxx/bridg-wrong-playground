@@ -17,6 +17,11 @@ class ApiHttp extends Node {
         return super.start()
             .then(() => (new Promise((resolve, reject) => {
                 const server = Hapi.server(this.configApi.httpServer);
+                server.route({
+                    method: '*',
+                    path: '/JSONRPC/{method*}',
+                    handler: (request, h) => ({id: -1, error: 'MethodNotFound'})
+                });
                 this.apiRoutes.map(({methodName, ...route}) => server.route(Object.assign({
                     method: 'POST',
                     path: `/JSONRPC/${methodName}`,
@@ -29,7 +34,7 @@ class ApiHttp extends Node {
                 server.events.on('start', resolve);
                 server.start();
             })))
-            .then(() => console.log('api-http ready'))
+            .then(() => console.log('api-http ready', this.configApi.httpServer))
             .then(() => (this.configApi.httpServer));
     }
 
