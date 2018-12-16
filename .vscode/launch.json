@@ -7,32 +7,36 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "test resolver",
-            "program": "${workspaceFolder}/discovery/test-resolver.js"
-        },
-        {
-            "type": "node",
-            "request": "launch",
             "name": "Node 1",
             "program": "${workspaceFolder}/Node1/index.js",
-            "env": {
-                "NODE_PATH": "${workspaceRoot}/dev/"
-            }
+            "runtimeArgs": ["--preserve-symlinks"],
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         },
         {
             "type": "node",
             "request": "launch",
             "name": "Node 2",
+            "runtimeArgs": ["--preserve-symlinks"],
             "program": "${workspaceFolder}/Node2/index.js",
-            "env": {
-                "NODE_PATH": "${workspaceRoot}/dev/"
-            }
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Logger",
+            "program": "${workspaceFolder}/Logger/index.js",
+            "runtimeArgs": ["--preserve-symlinks"],
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         }
     ],
     "compounds": [
         {
             "name": "Node 1 + Node 2",
             "configurations": ["Node 1", "Node 2"]
+        },
+        {
+            "name": "Node 1 + Logger",
+            "configurations": ["Node 1", "Logger"]
         }
     ]
 }

@@ -4,6 +4,7 @@ const Inert = require('inert');
 const Vision = require('vision');
 const Boom = require('boom');
 const Joi = require('joi');
+const uuid = require('uuid/v4');
 const HapiSwagger = require('hapi-swagger');
 const swaggerOptions = {
     info: {
@@ -13,16 +14,16 @@ const swaggerOptions = {
 };
 
 const validation = {
-    payload: {
+    payload: Joi.object().keys({
         jsonrpc: Joi.any().valid('2.0').required(),
-        id: Joi.number().positive().example(1),
+        id: Joi.number().example(1),
         meta: Joi.object().required(),
         method: Joi.string().required(),
         params: Joi.object().required()
-    },
+    }).optionalKeys('id').required(),
     failAction: (request, h, err) => {
         if (err) {
-            console.error(err);
+            this.log('error', {in: 'http-api-fail-handler:method:failAction', error: err, payload: request.payload});
             throw Boom.badRequest('ValidationError');
         }
         throw err;
@@ -43,6 +44,7 @@ class ApiHttp extends Node {
 
     start() {
         return super.start()
+            .then(() => this.log('info', {in: 'start', message: `api-http pending: ${JSON.stringify(this.configApi.httpServer)}`}))
             .then(() => (new Promise((resolve, reject) => {
                 const server = Hapi.server(this.configApi.httpServer);
                 server.route({
@@ -56,8 +58,10 @@ class ApiHttp extends Node {
                 this.apiRoutes.map(({methodName, ...route}) => server.route(Object.assign({
                     method: 'POST',
                     path: `/JSONRPC/${methodName}`,
-                    handler: (request, h) => {
-                        return this.apiRequestReceived({message: {}, meta: {method: methodName}})
+                    handler: ({payload: {params, id = false, meta: {globTraceId = uuid()} = {}} = {}}, h) => {
+                        const msg = {message: params, meta: {method: methodName, globTraceId, isNotification: (!id)}};
+                        this.log('info', {in: 'jsonrpc-api-handler:method', message: msg});
+                        return this.apiRequestReceived(msg)
                             .then((response = 'empty') => ({response: response}))
                             .catch(() => ({error: true}));
                     },
@@ -76,7 +80,7 @@ class ApiHttp extends Node {
                     }
                 ]).then(() => server.start());
             })))
-            .then(() => console.log('api-http ready', this.configApi.httpServer))
+            .then(() => this.log('info', {in: 'start', message: `api-http ready: ${JSON.stringify(this.configApi.httpServer)}`}))
             .then(() => (this.configApi.httpServer));
     }
 

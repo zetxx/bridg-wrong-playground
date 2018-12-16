@@ -9,6 +9,7 @@
         "joi": "*",
         "hapi-swagger": "*",
         "mdns-resolver": "*",
-        "boom": "*"
+        "boom": "*",
+        "uuid": "*"
     }
 }

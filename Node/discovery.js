@@ -14,12 +14,14 @@ class ApiHttpDiscovery extends Node {
 
     start() {
         return super.start()
+            .then((httpApi) => Promise.resolve().then(() => this.log('info', {in: 'start flow', text: `discovery[${this.name}]: pending`})).then(() => httpApi))
             .then((httpApi) => new Promise((resolve, reject) => {
                 const disc = discovery({domain: this.domain});
                 this.cleanup.push(() => Promise.resolve().then(() => disc.unannounce(this.name, httpApi.port)).then(() => disc.destroy(this.name, httpApi.port)));
                 disc.announce(this.name, httpApi.port);
                 resolve();
-            }));
+            }))
+            .then(() => this.log('info', {in: 'start flow', text: `discovery[${this.name}]: ready`}));
     }
 
     stop() {
@@ -39,7 +41,7 @@ class ApiHttpDiscovery extends Node {
     remoteApiRequest({destination, message, meta}) {
         var [nodeName, ...rest] = destination.split('.');
         return this.resolve(nodeName)
-            .then((request) => request({method: rest.join('.'), params: message || {}}));
+            .then((request) => request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {caller: this.name})}));
     }
 }
 
