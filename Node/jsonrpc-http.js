@@ -23,7 +23,9 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                 'content-length': body.length
             }
         }, (resp) => {
-            resp.on('data', (data) => resolve(data.toString()));
+            resp.on('data', (data) => {
+                return resolve(data.toString());
+            });
         });
         req.write(body);
         req.end();

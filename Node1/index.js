@@ -17,4 +17,4 @@ service.registerApiMethod({
     }
 });
 service.start()
-    .catch((e) => console.error(e));
+    .catch((e) => service.log('error', e));

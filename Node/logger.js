@@ -13,9 +13,8 @@ class Logger extends Node {
     }
 
     log(level, message) {
-        super.log(level, message)
-            .then(() => (this.logWire && this.logWire({method: 'log', params: {level, message}, meta: {isNotification: 1}})))
-            .catch((e) => {});
+        this.logWire && this.logWire({method: 'log', params: {level, message}, meta: {isNotification: 1}});
+        !this.logWire && super.log(level, message);
         return Promise.resolve({});
     }
 

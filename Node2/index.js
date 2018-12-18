@@ -16,4 +16,5 @@ service.registerApiMethod({
         return {rr: 123};
     }
 });
-service.start();
+service.start()
+    .catch((e) => service.log('error', e));
