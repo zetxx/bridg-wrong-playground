@@ -12,6 +12,7 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
             params,
             id: (!meta || meta.isNotification) ? 0 : intCounter++
         });
+        var resolved = false;
         var req = ((protocol === 'https:' && https) || http).request({
             protocol,
             hostname,
@@ -24,8 +25,13 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
             }
         }, (resp) => {
             resp.on('data', (data) => {
+                resolved = true;
                 return resolve(data.toString());
             });
+        });
+        req.on('error', (err) => {
+            !resolved && reject(err);
+            resolved = true;
         });
         req.write(body);
         req.end();

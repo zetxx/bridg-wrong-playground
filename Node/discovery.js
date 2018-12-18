@@ -41,7 +41,10 @@ class ApiHttpDiscovery extends Node {
     remoteApiRequest({destination, message, meta}) {
         var [nodeName, ...rest] = destination.split('.');
         return this.resolve(nodeName)
-            .then((request) => request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {caller: this.name})}));
+            .then((request) => request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {caller: this.name})}))
+            .then((r) => {
+                return r;
+            });
     }
 }
 

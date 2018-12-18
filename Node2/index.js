@@ -1,4 +1,4 @@
-const Service = require('../Node/discovery');
+const Service = require('../Node/service');
 
 var service = new Service({name: 'node2', httpApiPort: 7868});
 
@@ -13,7 +13,13 @@ service.registerApiMethod({
     method: 'a',
     direction: 'out',
     fn: function(message) {
-        return {rr: 123};
+        return message;
+    }
+});
+service.registerExternalMethod({
+    method: 'a',
+    fn: function(message) {
+        return message;
     }
 });
 service.start()
