@@ -3,6 +3,8 @@
     "dependencies": {
         "bridg-wrong": "*",
         "hapi": "*",
+        "pino": "*",
+        "pino-pretty": "*",
         "dns-discovery": "*",
         "inert": "*",
         "vision": "*",

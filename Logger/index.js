@@ -1,13 +1,23 @@
 const Service = require('../Node/discovery');
+const logger = require('pino')({
+    prettyPrint: {colorize: true}
+});
 
-var service = new Service({name: 'logger', httpApiPort: 9999});
+class MainLogger extends Service {
+    log(level, message) {
+        logger[level || 'info'](message);
+        return Promise.resolve({});
+    }
+}
+
+var service = new MainLogger({name: 'logger', httpApiPort: 9999});
 
 service.registerApiMethod({
     method: 'log',
     direction: 'in',
-    fn: function({level = 'log', ...rest}) {
+    fn: function({level = 'info', fingerPrint, ...rest}) {
         try {
-            console[level](`logger: ${JSON.stringify(...rest)}`);
+            service.log((level || 'info'), {pid: `${fingerPrint.nodeName}`, ...rest});
         } catch (e) {}
         return {};
     }
