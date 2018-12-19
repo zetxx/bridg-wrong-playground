@@ -5,7 +5,7 @@ const logger = require('pino')({
 
 class MainLogger extends Service {
     log(level, message) {
-        logger[level || 'info'](message);
+        logger[level || 'info'](Object.assign({pid: 'Logger'}, message));
         return Promise.resolve({});
     }
 }

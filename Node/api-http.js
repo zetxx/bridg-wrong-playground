@@ -13,7 +13,7 @@ const swaggerOptions = {
     }
 };
 
-const validation = {
+const validate = {
     payload: Joi.object().keys({
         jsonrpc: Joi.any().valid('2.0').required(),
         id: Joi.number().example(1),
@@ -60,14 +60,14 @@ class ApiHttp extends Node {
                     path: `/JSONRPC/${methodName}`,
                     handler: ({payload: {params, id = false, meta: {globTraceId = uuid()} = {}} = {}}, h) => {
                         const msg = {message: params, meta: {method: methodName, globTraceId, isNotification: (!id)}};
-                        this.log('info', {in: 'jsonrpc-api-handler:method', message: msg});
+                        this.log('info', {in: 'jsonrpc-api-handler:method', pack: msg});
                         return this.apiRequestReceived(msg)
                             .then((response = 'empty') => ({response: response}))
                             .catch(() => ({error: true}));
                     },
                     options: {
                         tags: ['api'],
-                        validate: validation
+                        validate
                     }
                 }, route)));
                 server.events.on('start', resolve);
