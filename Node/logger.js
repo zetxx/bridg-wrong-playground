@@ -13,7 +13,7 @@ class Logger extends Node {
     }
 
     log(level, message) {
-        this.logWire && this.logWire({method: 'log', params: {level, message, fingerPrint: this.getFingerprint()}, meta: {isNotification: 1}});
+        this.logWire && this.logWire({method: 'log', params: {level, message, fingerPrint: this.getFingerprint()}, meta: {isNotification: 1}}).catch((e) => console.error(e));
         !this.logWire && super.log(level, message);
         return Promise.resolve({});
     }
