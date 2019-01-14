@@ -1,8 +1,11 @@
 {
+    "name": "bridg-wrong-playground",
+    "description": "",
     "version": "0.0.1",
     "dependencies": {
         "bridg-wrong": "*",
         "hapi": "*",
+        "immutable": "*",
         "pino": "*",
         "pino-pretty": "*",
         "dns-discovery": "*",
@@ -13,5 +16,7 @@
         "mdns-resolver": "*",
         "boom": "*",
         "uuid": "*"
-    }
+    },
+    "author": "zetxx",
+    "license": "MIT"
 }

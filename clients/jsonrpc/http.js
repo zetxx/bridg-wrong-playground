@@ -26,10 +26,16 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
         }, (resp) => {
             resp.on('data', (data) => {
                 resolved = true;
-                return resolve(data.toString());
+                const rp = JSON.parse(data.toString());
+                if (rp.error) {
+                    return reject({...rp, meta});
+                }
+                return resolve(rp);
             });
         });
         req.on('error', (err) => {
+            err.httpClientError = true;
+            err.requestData = JSON.stringify({method, params, meta});
             !resolved && reject(err);
             resolved = true;
         });
