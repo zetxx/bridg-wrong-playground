@@ -18,7 +18,12 @@ module.exports = (Node) => {
             this.codec = codec;
         }
         start() {
-            var c = (this.codec && this.codec()) || codec({});
+            var codecCofnig = rc(this.getNodeName() || 'buzzer', {
+                codec: {
+                    macCheck: false
+                }
+            }).codec;
+            var c = (this.codec && this.codec(codecCofnig)) || codec({});
             this.encode = c.encode.bind(c);
             this.decode = c.decode.bind(c);
             this.receivedBuffer = Buffer.from('');
