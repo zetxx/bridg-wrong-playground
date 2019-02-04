@@ -42,7 +42,7 @@ module.exports = (Node) => {
         start() {
             return super.start()
                 .then(() => (
-                    this.setState(
+                    this.setStore(
                         ['config', 'api'],
                         rc(this.getNodeName() || 'buzzer', {
                             api: {
@@ -52,9 +52,9 @@ module.exports = (Node) => {
                         }).api
                     )
                 ))
-                .then(() => this.log('info', {in: 'start', message: `api-http pending: ${JSON.stringify(this.getState(['config', 'api']))}`}))
+                .then(() => this.log('info', {in: 'start', message: `api-http pending: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
                 .then(() => (new Promise((resolve, reject) => {
-                    const server = Hapi.server(this.getState(['config', 'api']));
+                    const server = Hapi.server(this.getStore(['config', 'api']));
                     server.route({
                         method: '*',
                         path: '/JSONRPC/{method*}',
@@ -100,8 +100,8 @@ module.exports = (Node) => {
                         }
                     ]).then(() => server.start());
                 })))
-                .then(() => this.log('info', {in: 'start', message: `api-http ready: ${JSON.stringify(this.getState(['config', 'api']))}`}))
-                .then(() => (this.getState(['config', 'api'])));
+                .then(() => this.log('info', {in: 'start', message: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
+                .then(() => (this.getStore(['config', 'api'])));
         }
 
         registerApiMethod({method, direction = 'both', meta: {validate} = {}, fn}) {

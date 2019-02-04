@@ -31,7 +31,7 @@ module.exports = (Node) => {
             this.socket = undefined;
             return super.start()
                 .then(() => (
-                    this.setState(
+                    this.setStore(
                         ['config'],
                         {
                             tcp: rc(this.getNodeName() || 'buzzer', {
@@ -50,7 +50,7 @@ module.exports = (Node) => {
             this.log('info', {in: 'connect', text: 'connection initialisation'});
             return new Promise((resolve, reject) => {
                 if (!this.connected) {
-                    this.socket = net.createConnection({port: this.getState(['config', 'tcp', 'port']), host: this.getState(['config', 'tcp', 'host'])});
+                    this.socket = net.createConnection({port: this.getStore(['config', 'tcp', 'port']), host: this.getStore(['config', 'tcp', 'host'])});
                     this.socket.on('data', (data) => this.dataReceived(data));
                     this.socket.on('connect', () => {
                         this.log('info', {in: 'connect', text: 'connected'});

@@ -13,7 +13,7 @@ module.exports = (Node) => {
         start() {
             return super.start()
                 .then(() => (
-                    this.setState(
+                    this.setStore(
                         ['config', 'api'],
                         rc(this.getNodeName() || 'buzzer', {
                             api: {
@@ -23,7 +23,7 @@ module.exports = (Node) => {
                         }).api
                     )
                 ))
-                .then(() => this.log('info', {in: 'start', message: `api-udp pending: ${JSON.stringify(this.getState(['config', 'api']))}`}))
+                .then(() => this.log('info', {in: 'start', message: `api-udp pending: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
                 .then(() => (new Promise((resolve, reject) => {
                     server.on('listening', resolve);
                     server.on('error', (error) => this.log('error', {in: 'udp.server:on.error', text: 'udp server error', error}));
@@ -44,10 +44,10 @@ module.exports = (Node) => {
                                 return {id: id, error: e};
                             });
                     });
-                    server.bind(this.getState(['config', 'api']));
+                    server.bind(this.getStore(['config', 'api']));
                 })))
-                .then(() => this.log('info', {in: 'start', message: `api-udp ready: ${JSON.stringify(this.getState(['config', 'api']))}`}))
-                .then(() => (this.getState(['config', 'api'])));
+                .then(() => this.log('info', {in: 'start', message: `api-udp ready: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
+                .then(() => (this.getStore(['config', 'api'])));
         }
 
         registerApiMethod({method, direction, fn}) {
