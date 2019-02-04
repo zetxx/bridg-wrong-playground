@@ -67,7 +67,7 @@ module.exports = (Node) => {
                             }
                         }
                     });
-                    this.apiRoutes.map(({methodName, validate: {input}, ...route}) => {
+                    this.apiRoutes.map(({methodName, validate: {input}, cors, ...route}) => {
                         return server.route(Object.assign({
                             method: 'POST',
                             path: `/JSONRPC/${methodName}`,
@@ -86,6 +86,7 @@ module.exports = (Node) => {
                             },
                             options: {
                                 tags: ['api'],
+                                cors,
                                 validate: validate(this.log.bind(this), {params: input, method: methodName})
                             }
                         }, route));
@@ -104,8 +105,8 @@ module.exports = (Node) => {
                 .then(() => (this.getStore(['config', 'api'])));
         }
 
-        registerApiMethod({method, direction = 'both', meta: {validate} = {}, fn}) {
-            (['in', 'both'].indexOf(direction) >= 0) && this.apiRoutes.push({methodName: method, validate: {[`input`]: validate}});
+        registerApiMethod({method, direction = 'both', meta: {validate, cors} = {}, fn}) {
+            (['in', 'both'].indexOf(direction) >= 0) && this.apiRoutes.push({methodName: method, validate: {[`input`]: validate}, cors});
             var directions = [];
             if (direction === 'both') {
                 directions = ['in', 'out'];
