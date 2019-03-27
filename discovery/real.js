@@ -16,7 +16,9 @@ module.exports = (Node) => {
                 }
             }).discovery;
             this.name = name;
-            this.domain = rcConf.domain.split(',');
+            var {domain, ...discoveryOptions} = rcConf;
+            this.domain = domain.split(',');
+            this.discoveryOptions = discoveryOptions || {};
             this.cleanup = [];
             this.internalRemoteServices = {};
         }
@@ -30,7 +32,7 @@ module.exports = (Node) => {
                 .then((httpApi) => Promise.resolve().then(() => this.log('info', {in: 'start flow', text: `discovery[${this.name}]: pending`})).then(() => httpApi))
                 .then((httpApi) => new Promise((resolve, reject) => {
                     this.domain.map((domain) => {
-                        let disc = discovery({domain: `${domain}.local`});
+                        let disc = discovery({domain: `${domain}.local`, ...this.discoveryOptions});
                         this.cleanup.push(() => Promise.resolve().then(() => disc.unannounce(this.name, httpApi.port)).then(() => disc.destroy(this.name, httpApi.port)));
                         disc.announce(this.name, httpApi.port);
                     });
