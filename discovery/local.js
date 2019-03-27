@@ -2,8 +2,8 @@ const rc = require('rc');
 const discovery = require('dns-discovery');
 const mdnsResolver = require('mdns-resolver');
 const jsonrpcClient = {
-    http: require('./clients/jsonrpc/http'),
-    udp: require('./clients/jsonrpc/udp')
+    http: require('../clients/jsonrpc/http'),
+    udp: require('../clients/jsonrpc/udp')
 };
 
 module.exports = (Node) => {
