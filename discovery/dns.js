@@ -1,9 +1,29 @@
 const rc = require('rc');
 const discovery = require('dns-discovery');
-const mdnsResolver = require('mdns-resolver');
 const jsonrpcClient = {
     http: require('../clients/jsonrpc/http'),
     udp: require('../clients/jsonrpc/udp')
+};
+
+const discoveryLookup = (d, timeout = 30000) => {
+    return (lookupName) => {
+        var p = new Promise((resolve, reject) => {
+            var interval = setTimeout(() => reject(new Error('resolveTimeout')), timeout);
+            d.on('peer', function(name, peer) {
+                if (lookupName === name) {
+                    clearTimeout(interval);
+                    d.on('peer', () => {});
+                    resolve({name, peer});
+                }
+            });
+            d.lookup(lookupName);
+        });
+        return p
+            .catch((e) => {
+                d.on('peer', () => {});
+                throw e;
+            });
+    };
 };
 
 module.exports = (Node) => {
@@ -20,6 +40,7 @@ module.exports = (Node) => {
             this.domain = domain.split(',');
             this.discoveryOptions = discoveryOptions || {};
             this.cleanup = [];
+            this.discoveryDomainCache = {};
             this.internalRemoteServices = {};
         }
 
@@ -49,12 +70,18 @@ module.exports = (Node) => {
         resolve(serviceName, apiClient) {
             if (!this.internalRemoteServices[serviceName]) {
                 return this.domain.reduce((p, domain) => {
-                    return p.then((resolved) => mdnsResolver
-                        .resolveSrv(`${serviceName}.${domain}.local`)
-                        .then(({port, target}) => ({port, host: target.replace('0.0.0.0', '127.0.0.1')}))
+                    return p
+                        .then(() => {
+                            if (!this.discoveryDomainCache[domain]) {
+                                this.discoveryDomainCache[domain] = discovery({domain: `${domain}.local`, ...this.discoveryOptions});
+                            }
+                            return discoveryLookup(this.discoveryDomainCache[domain])(serviceName);
+                        })
+                        .then(({peer: {host, port}}) => {
+                            return {port, host: host.replace('0.0.0.0', '127.0.0.1')};
+                        })
                         .then(({host, port}) => (this.internalRemoteServices[serviceName] = jsonrpcClient[apiClient || 'http']({hostname: host, port})))
-                        .then(() => this.internalRemoteServices[serviceName])
-                    );
+                        .then(() => this.internalRemoteServices[serviceName]);
                 }, Promise.resolve({next: true}));
             }
             return Promise.resolve(this.internalRemoteServices[serviceName]);

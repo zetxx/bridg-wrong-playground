@@ -40,9 +40,5 @@ module.exports = (Node) => {
             this.cleanupLogQueue();
             return Promise.resolve({});
         }
-
-        stop() {
-            return super.stop();
-        }
     };
 };
