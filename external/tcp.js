@@ -1,7 +1,8 @@
 const net = require('net');
-const codec = () => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
+const pso = require('parse-strings-in-object');
 const rc = require('rc');
 const uuid = require('uuid/v4');
+const codec = () => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
 
 const rqMsgLen = (msg) => {
     let len = parseInt(msg.slice(0, 2).toString('hex'), 16);
@@ -34,13 +35,13 @@ module.exports = (Node) => {
                     this.setStore(
                         ['config'],
                         {
-                            tcp: rc(this.getNodeName() || 'buzzer', {
+                            tcp: pso(rc(this.getNodeName() || 'buzzer', {
                                 tcp: {
                                     host: 'localhost', // to wich host to connect (where switch is listening)
                                     port: 5000, // to wich port to connect  (where switch is listening)
                                     responseTimeout: 10000 // throw timeout error after period of time (ms)
                                 }
-                            }).tcp
+                            }).tcp)
                         }
                     )
                 ))

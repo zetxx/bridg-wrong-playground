@@ -5,6 +5,7 @@ const Boom = require('boom');
 const Joi = require('joi');
 const uuid = require('uuid/v4');
 const HapiSwagger = require('hapi-swagger');
+const pso = require('parse-strings-in-object');
 const rc = require('rc');
 const swaggerOptions = {
     info: {
@@ -44,12 +45,12 @@ module.exports = (Node) => {
                 .then(() => (
                     this.setStore(
                         ['config', 'api'],
-                        rc(this.getNodeName() || 'buzzer', {
+                        pso(rc(this.getNodeName() || 'buzzer', {
                             api: {
                                 port: 8080,
                                 address: '0.0.0.0'
                             }
-                        }).api
+                        }).api)
                     )
                 ))
                 .then(() => this.log('info', {in: 'start', message: `api-http pending: ${JSON.stringify(this.getStore(['config', 'api']))}`}))

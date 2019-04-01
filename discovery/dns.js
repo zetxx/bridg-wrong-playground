@@ -1,5 +1,6 @@
 const rc = require('rc');
 const discovery = require('dns-discovery');
+const pso = require('parse-strings-in-object');
 const jsonrpcClient = {
     http: require('../clients/jsonrpc/http'),
     udp: require('../clients/jsonrpc/udp')
@@ -30,11 +31,11 @@ module.exports = (Node) => {
     class ApiHttpDiscovery extends Node {
         constructor({name = 'Node'} = {}) {
             super();
-            var rcConf = rc(name, {
+            var rcConf = pso(rc(name, {
                 discovery: {
                     domain: 'testdomain'
                 }
-            }).discovery;
+            }).discovery);
             this.name = name;
             var {domain, ...discoveryOptions} = rcConf;
             this.domain = domain.split(',');

@@ -3,6 +3,8 @@
     "description": "",
     "version": "1.1.5",
     "dependencies": {
+        "rc": "*",
+        "parse-strings-in-object": "*",
         "bridg-wrong": "*",
         "hapi": "*",
         "immutable": "*",
