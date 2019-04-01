@@ -13,7 +13,6 @@
         "vision": "*",
         "joi": "*",
         "hapi-swagger": "*",
-        "mdns-resolver": "*",
         "boom": "*",
         "uuid": "*"
     },
