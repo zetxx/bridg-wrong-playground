@@ -16,7 +16,9 @@
         "joi": "*",
         "hapi-swagger": "*",
         "boom": "*",
-        "uuid": "*"
+        "uuid": "*",
+        "request": "*",
+        "request-promise-native": "*"
     },
     "author": "zetxx",
     "license": "MIT"
