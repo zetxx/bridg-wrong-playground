@@ -31,13 +31,13 @@ module.exports = (Node) => {
             this.log('info', {in: 'triggerEvent', event, message});
             return this.findExternalMethod({method: `event.${event}`})
                 .then((fn) => fn(this.getInternalCommunicationContext({direction: 'in'}), message, {}))
-                .then((result) => this.externalOut({result}, null, {}))
+                .then((result) => this.externalOut({message: result}, null, {}))
                 .catch((error) => this.log('error', {in: 'method:triggerEvent', error}));
         }
 
-        externalOut({result, error, meta}) {
-            this.log('info', {in: 'externalOut', result, error, meta});
-            return request(result);
+        externalOut({message, error, meta}) {
+            this.log('info', {in: 'externalOut', message, error, meta});
+            return request(message);
         }
     }
 
