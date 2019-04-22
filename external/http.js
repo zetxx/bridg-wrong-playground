@@ -30,7 +30,7 @@ module.exports = (Node) => {
         }
 
         triggerEvent(event, message = {}) {
-            this.log('info', {in: 'triggerEvent', event, message});
+            this.log('debug', {in: 'triggerEvent', event, message});
             return this.findExternalMethod({method: `event.${event}`})
                 .then((fn) => fn(this.getInternalCommunicationContext({direction: 'in'}), message, {}))
                 .then((result) => this.externalOut({result, meta: {method: event, event: true}}))
@@ -38,7 +38,7 @@ module.exports = (Node) => {
         }
 
         externalOut({result, error, meta}) {
-            this.log('info', {in: 'externalOut', message: result, error, meta});
+            this.log('debug', {in: 'externalOut', message: result, error, meta});
             let newMeta = {...meta};
             if (meta && meta.event) {
                 newMeta = {method: [meta.method, 'response'].join('.')};
@@ -46,7 +46,7 @@ module.exports = (Node) => {
             let timeout = this.getStore(['config', 'http', 'timeout']);
             return request({timeout, ...result})
                 .then((requestResult) => {
-                    return this.externalIn({result: requestResult, meta: newMeta});
+                    return this.externalIn({message: requestResult, meta: newMeta});
                 })
                 .catch((error) => {
                     this.log('error', {in: 'externalIn', meta, error});

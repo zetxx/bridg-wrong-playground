@@ -48,13 +48,13 @@ module.exports = (Node) => {
                 .then(() => setTimeout(() => !this.connected && this.triggerEvent('externalDisconnected'), 5000)); // if only network gets restarted, send dissconect event if it is not connected
         }
         connect() {
-            this.log('info', {in: 'connect', text: 'connection initialisation'});
+            this.log('debug', {in: 'connect', text: 'connection initialisation'});
             return new Promise((resolve, reject) => {
                 if (!this.connected) {
                     this.socket = net.createConnection({port: this.getStore(['config', 'tcp', 'port']), host: this.getStore(['config', 'tcp', 'host'])});
                     this.socket.on('data', (data) => this.dataReceived(data));
                     this.socket.on('connect', () => {
-                        this.log('info', {in: 'connect', text: 'connected'});
+                        this.log('debug', {in: 'connect', text: 'connected'});
                         this.connected = true;
                         this.socket.on('error', (e) => {
                             this.log('error', {in: 'connect', error: e});
@@ -78,14 +78,14 @@ module.exports = (Node) => {
         }
 
         triggerEvent(event, message = {}) {
-            this.log('info', {in: 'triggerEvent', event, message});
+            this.log('debug', {in: 'triggerEvent', event, message});
             return this.findExternalMethod({method: `event.${event}`})
                 .then((fn) => fn(this.getInternalCommunicationContext({direction: 'in'}), message, {}))
                 .catch((error) => this.log('error', {in: `method:triggerEvent`, error}));
         }
 
         getIncomingMessages(messages = []) {
-            this.log('info', {in: 'getIncomingMessages', messages});
+            this.log('debug', {in: 'getIncomingMessages', messages});
             var len = rqMsgLen(this.receivedBuffer);
             if ((this.receivedBuffer.length - msgHeaderLen) >= len) {
                 messages.push(this.receivedBuffer.slice(msgHeaderLen, len + msgHeaderLen));
@@ -98,12 +98,12 @@ module.exports = (Node) => {
         }
 
         dataReceived(data) {
-            this.log('info', {in: 'dataReceived'});
+            this.log('debug', {in: 'dataReceived'});
             this.receivedBuffer = Buffer.concat([this.receivedBuffer, data]);
             this.getIncomingMessages()
                 .map((msgBuf) => Promise.resolve(msgBuf)
                     .then((buffer) => {
-                        this.log('info', {in: 'dataReceived', buffer: buffer.toString('hex')});
+                        this.log('debug', {in: 'dataReceived', buffer: buffer.toString('hex')});
                         return buffer;
                     })
                     .then((buffer) => this.externalIn({result: buffer})) // send parsed msg to terminal
@@ -112,7 +112,7 @@ module.exports = (Node) => {
         }
 
         matchExternalInToTx(result) {
-            this.log('info', {in: 'matchExternalInToTx', result});
+            this.log('debug', {in: 'matchExternalInToTx', result});
             var idxRspMatch = this.apiRequestsPool.findIndex(({meta: {responseMatchKey} = {}} = {}) => {
                 if (responseMatchKey && responseMatchKey.messageCoordinationNumber && result && result.messageCoordinationNumber) {
                     return result.messageCoordinationNumber === responseMatchKey.messageCoordinationNumber;
@@ -127,10 +127,10 @@ module.exports = (Node) => {
         }
 
         externalIn({result}) {
-            this.log('info', {in: 'externalIn', result});
+            this.log('debug', {in: 'externalIn', result});
             return this.decode(result)
                 .then(({parsed}) => {
-                    this.log('info', {in: 'externalIn', parsed});
+                    this.log('debug', {in: 'externalIn', parsed});
                     var result = parsed;
                     const globTraceId = uuid();
                     var {apiRequestId} = this.matchExternalInToTx(result);
@@ -140,14 +140,14 @@ module.exports = (Node) => {
         }
 
         getInternalCommunicationContext(meta) {
-            this.log('info', {in: 'getInternalCommunicationContext', meta});
+            this.log('debug', {in: 'getInternalCommunicationContext', meta});
             return super.getInternalCommunicationContext(meta, {
                 connect: () => this.connect()
             });
         }
 
         externalOut({result, error, meta}) {
-            this.log('info', {in: 'externalOut', result, error, meta});
+            this.log('debug', {in: 'externalOut', result, error, meta});
             if (error) {
                 return Promise.resolve({error})
                     .then(() => {
@@ -156,7 +156,7 @@ module.exports = (Node) => {
             }
             return this.encode(result)
                 .then((buffer) => {
-                    this.log('info', {in: 'externalOut', worldOutBuffer: buffer.toString('hex')});
+                    this.log('debug', {in: 'externalOut', worldOutBuffer: buffer.toString('hex')});
                     return this.socket.write(buffer);
                 })
                 .catch((e) => {

@@ -9,7 +9,7 @@ module.exports = (Node) => {
             return super.start()
                 .then(() => setInterval(() => this.cleanupLogQueue(), 1000))
                 .then(() => this.initLogger())
-                .then(() => this.log('info', {in: 'start', message: `Logger: ready`}));
+                .then(() => this.log('info', {in: 'start', message: 'ready'}));
         }
 
         initLogger() {

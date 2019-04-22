@@ -7,7 +7,7 @@ module.exports = (Node) => {
         start() {
             return super.start()
                 .then(() => this.initLogger())
-                .then(() => this.log('info', {in: 'start', message: `Logger: ready`}));
+                .then(() => this.log('info', {in: 'start', message: 'ready'}));
         }
 
         initLogger() {
