@@ -21,7 +21,9 @@ module.exports = (Node) => {
                     this.setStore(
                         ['config', 'http'],
                         pso(rc(this.getNodeName() || 'buzzer', {
-                            http: {}
+                            http: {
+                                timeout: 10000
+                            }
                         }).http)
                     )
                 ));
@@ -31,13 +33,25 @@ module.exports = (Node) => {
             this.log('info', {in: 'triggerEvent', event, message});
             return this.findExternalMethod({method: `event.${event}`})
                 .then((fn) => fn(this.getInternalCommunicationContext({direction: 'in'}), message, {}))
-                .then((result) => this.externalOut({message: result}, null, {}))
+                .then((result) => this.externalOut({result, meta: {method: event, event: true}}))
                 .catch((error) => this.log('error', {in: 'method:triggerEvent', error}));
         }
 
-        externalOut({message, error, meta}) {
-            this.log('info', {in: 'externalOut', message, error, meta});
-            return request(message);
+        externalOut({result, error, meta}) {
+            this.log('info', {in: 'externalOut', message: result, error, meta});
+            let newMeta = {...meta};
+            if (meta && meta.event) {
+                newMeta = {method: [meta.method, 'response'].join('.')};
+            }
+            let timeout = this.getStore(['config', 'http', 'timeout']);
+            return request({timeout, ...result})
+                .then((requestResult) => {
+                    return this.externalIn({result: requestResult, meta: newMeta});
+                })
+                .catch((error) => {
+                    this.log('error', {in: 'externalIn', error});
+                    return this.externalIn({error, meta: newMeta});
+                });
         }
     }
 
