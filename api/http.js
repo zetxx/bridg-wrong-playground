@@ -69,6 +69,7 @@ module.exports = (Node) => {
                         }
                     });
                     this.apiRoutes.map(({methodName, validate: {input}, cors, ...route}) => {
+                        this.log('debug', {in: 'api.route.register', methodName});
                         return server.route(Object.assign({
                             method: 'POST',
                             path: `/JSONRPC/${methodName}`,
@@ -114,7 +115,7 @@ module.exports = (Node) => {
             } else {
                 directions = [direction];
             }
-            directions.map((direction) => super.registerApiMethod({method: [method, direction].join('.'), fn}))
+            directions.map((direction) => super.registerApiMethod({method: [method, direction].join('.'), fn}));
         }
     }
     return ApiHttp;

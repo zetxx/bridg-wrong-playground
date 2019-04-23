@@ -14,7 +14,7 @@ module.exports = (Node) => {
             if (meta && meta.event) {
                 newMeta = {method: [meta.method, 'response'].join('.')};
             }
-            return this.externalIn({message: result, meta: newMeta});
+            return this.externalIn({result, meta: newMeta});
         }
     }
 

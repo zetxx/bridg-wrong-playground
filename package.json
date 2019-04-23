@@ -18,6 +18,7 @@
         "boom": "*",
         "uuid": "*",
         "request": "*",
+        "pg": "*",
         "request-promise-native": "*"
     },
     "author": "zetxx",

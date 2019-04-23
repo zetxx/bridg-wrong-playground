@@ -46,7 +46,7 @@ module.exports = (Node) => {
             let timeout = this.getStore(['config', 'http', 'timeout']);
             return request({timeout, ...result})
                 .then((requestResult) => {
-                    return this.externalIn({message: requestResult, meta: newMeta});
+                    return this.externalIn({result: requestResult, meta: newMeta});
                 })
                 .catch((error) => {
                     this.log('error', {in: 'externalIn', meta, error});
