@@ -40,21 +40,28 @@ module.exports = (Node) => {
             }
         }
 
-        async externalOut({result: {table, insert, select}, error, meta}) {
+        async externalOut({result: {table, insert, select, fn}, error, meta}) {
             let {schema, database} = this.getStore(['config', 'storage']);
             this.log('trace', {in: 'externalOut', message: {table, insert, select}, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
             var query;
+            let fullObjectName = [database, schema, table || (fn && fn.name)].join('.');
+            let fields = Object.keys(insert || select || {});
             if (insert) {
-                let fullTableName = [database, schema, table].join('.');
-                let fields = Object.keys(insert);
                 let values = fields.map((field) => insert[field]).join(', ');
-                query = `INSERT INTO ${fullTableName} (${fields.join(', ')}) VALUES (${values})`;
+                query = `INSERT INTO ${fullObjectName} (${fields.join(', ')}) VALUES (${values})`;
+            } else if (select) {
+                query = `SELECT * FROM ${fullObjectName} WHERE ${fields.map((field) => [field, select[field]].join('=')).join(' AND ')}`;
+            } else if (fn) {
+                query = {
+                    text: `SELECT * FROM ${fullObjectName}(${fn.data.map((v, k) => `$${k + 1}`).join(', ')})`,
+                    values: fn.data.map(({value}) => value)
+                };
             }
             let client = await this.pool.connect();
             try {
-                let {rows} = (await client.query(query)) || {};
-                this.log('trace', {in: 'externalOut', result: {rows}, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
-                return this.externalIn({result: rows, meta});
+                let res = (await client.query(query)) || {};
+                this.log('trace', {in: 'externalOut', result: res.rows, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
+                return this.externalIn({result: res.rows, meta});
             } catch (e) {
                 this.log('error', {in: 'externalOut', error: e, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
                 return this.externalIn({error: e, meta});

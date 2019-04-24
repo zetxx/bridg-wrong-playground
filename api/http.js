@@ -7,6 +7,8 @@ const uuid = require('uuid/v4');
 const HapiSwagger = require('hapi-swagger');
 const pso = require('parse-strings-in-object');
 const rc = require('rc');
+const serializeError = require('serialize-error');
+
 const swaggerOptions = {
     info: {
         title: 'Test API Documentation',
@@ -83,7 +85,7 @@ module.exports = (Node) => {
                                     })
                                     .catch((error) => {
                                         this.log('trace', {in: 'method:jsonrpc-api-handler.response', pack: msg, error});
-                                        return {id: id, error};
+                                        return {id: id, error: serializeError(error)};
                                     });
                             },
                             options: {
@@ -103,7 +105,11 @@ module.exports = (Node) => {
                         }
                     ]).then(() => server.start());
                 })))
-                .then(() => this.log('info', {in: 'start', message: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
+                .then(() => this.log('info', {
+                    in: 'start',
+                    swaggerUrl: `http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`,
+                    message: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))}`
+                }))
                 .then(() => (this.getStore(['config', 'api'])));
         }
 

@@ -19,7 +19,8 @@
         "uuid": "*",
         "request": "*",
         "pg": "*",
-        "request-promise-native": "*"
+        "request-promise-native": "*",
+        "serialize-error": "*"
     },
     "author": "zetxx",
     "license": "MIT"
