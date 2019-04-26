@@ -24,9 +24,16 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                 'content-length': body.length
             }
         }, (resp) => {
+            var dataCollection = Buffer.from([]);
             resp.on('data', (data) => {
+                dataCollection = Buffer.concat([dataCollection, data]);
+            });
+            resp.on('end', (data) => {
+                if (data) {
+                    dataCollection = Buffer.concat([dataCollection, data]);
+                }
                 resolved = true;
-                const rp = JSON.parse(data.toString());
+                const rp = JSON.parse(dataCollection.toString());
                 if (rp.error) {
                     return reject({...rp, meta});
                 }
