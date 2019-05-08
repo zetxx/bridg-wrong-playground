@@ -59,6 +59,16 @@ module.exports = (Node) => {
                 .then(() => (new Promise((resolve, reject) => {
                     const server = Hapi.server(this.getStore(['config', 'api']));
                     server.route({
+                        method: 'GET',
+                        path: '/healthz',
+                        options: {
+                            tags: ['api'],
+                            handler: (req, h) => {
+                                return {healthCheck: true};
+                            }
+                        }
+                    });
+                    server.route({
                         method: '*',
                         path: '/JSONRPC/{method*}',
                         options: {
