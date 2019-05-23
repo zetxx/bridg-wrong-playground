@@ -14,11 +14,16 @@ module.exports = (Node) => {
             var rcConf = pso(rc(name, {
                 discovery: {
                     domain: 'testdomain',
-                    nameResolve: false
+                    nameResolve: false,
+                    nodeName: name,
+                    resolveMap: {
+                        logger: 'logger'
+                    }
                 }
             }).discovery);
-            this.name = name;
-            var {domain, nameResolve, ...discoveryOptions} = rcConf;
+            var {domain, nameResolve, nodeName, resolveMap, ...discoveryOptions} = rcConf;
+            this.name = nodeName;
+            this.resolveMap = resolveMap;
             this.domain = domain.split(',');
             this.nameResolve = nameResolve;
             this.discoveryOptions = discoveryOptions || {};
@@ -51,16 +56,17 @@ module.exports = (Node) => {
         }
 
         resolve(serviceName, apiClient) {
-            if (!this.internalRemoteServices[serviceName]) {
+            var sn = this.resolveMap[serviceName] || serviceName;
+            if (!this.internalRemoteServices[sn]) {
                 return this.domain.reduce((p, domain) => {
-                    return p.then((resolved) => resolver(`${serviceName}.${domain}.local`)
-                        .then(({port, target}) => ({port, host: (this.nameResolve && serviceName) || target.replace('0.0.0.0', '127.0.0.1')}))
-                        .then(({host, port}) => (this.internalRemoteServices[serviceName] = jsonrpcClient[apiClient || 'http']({hostname: host, port})))
-                        .then(() => this.internalRemoteServices[serviceName])
+                    return p.then((resolved) => resolver(`${sn}.${domain}.local`)
+                        .then(({port, target}) => ({port, host: (this.nameResolve && sn) || target.replace('0.0.0.0', '127.0.0.1')}))
+                        .then(({host, port}) => (this.internalRemoteServices[sn] = jsonrpcClient[apiClient || 'http']({hostname: host, port})))
+                        .then(() => this.internalRemoteServices[sn])
                     );
                 }, Promise.resolve({next: true}));
             }
-            return Promise.resolve(this.internalRemoteServices[serviceName]);
+            return Promise.resolve(this.internalRemoteServices[sn]);
         }
 
         remoteApiRequest({destination, message, meta}) {
