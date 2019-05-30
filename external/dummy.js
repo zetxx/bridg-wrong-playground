@@ -1,17 +1,14 @@
 module.exports = (Node) => {
     class Http extends Node {
-        triggerEvent(event, message = {}) {
+        async triggerEvent(event, message = {}) {
             this.log('debug', {in: 'triggerEvent', event, message});
-            return this.findExternalMethod({method: `event.${event}`})
-                .then((fn) => {
-                    return fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
-                })
-                .then((result) => {
-                    return this.externalOut({result, meta: {method: event, event: true}});
-                })
-                .catch((error) => {
-                    return this.log('error', {in: 'method:triggerEvent', error});
-                });
+            try {
+                let fn = await this.findExternalMethod({method: `event.${event}`});
+                let result = await fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
+                return result && this.externalOut({result, meta: {method: event, event: true}});
+            } catch (error) {
+                return this.log('error', {in: 'method:triggerEvent', error});
+            }
         }
 
         externalOut({result, error, meta}) {
