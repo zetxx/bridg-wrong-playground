@@ -3,9 +3,15 @@ module.exports = (Node) => {
         triggerEvent(event, message = {}) {
             this.log('debug', {in: 'triggerEvent', event, message});
             return this.findExternalMethod({method: `event.${event}`})
-                .then((fn) => fn(this.getInternalCommunicationContext({direction: 'in'}), message, {}))
-                .then((result) => this.externalOut({result, meta: {method: event, event: true}}))
-                .catch((error) => this.log('error', {in: 'method:triggerEvent', error}));
+                .then((fn) => {
+                    return fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
+                })
+                .then((result) => {
+                    return this.externalOut({result, meta: {method: event, event: true}});
+                })
+                .catch((error) => {
+                    return this.log('error', {in: 'method:triggerEvent', error});
+                });
         }
 
         externalOut({result, error, meta}) {
