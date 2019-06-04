@@ -76,7 +76,7 @@ module.exports = (Node) => {
                             handler: ({payload: {params, id = 0, method, meta: {globTraceId} = {}} = {}}, h) => {
                                 const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
                                 this.log('trace', {in: 'method:jsonrpc-api-handler.request.response', pack: msg, error: 'MethodNotFound'});
-                                return {id: id, error: 'MethodNotFound'};
+                                return {id, error: 'MethodNotFound'};
                             }
                         }
                     });
@@ -85,18 +85,17 @@ module.exports = (Node) => {
                         return server.route(Object.assign({
                             method: 'POST',
                             path: `/JSONRPC/${methodName}`,
-                            handler: ({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
+                            handler: async({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
                                 const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
                                 this.log('trace', {in: 'method:jsonrpc-api-handler.request', pack: msg});
-                                return this.apiRequestReceived(msg)
-                                    .then((response = {id: id, error: new Error('unknown error')}) => {
-                                        this.log('trace', {in: 'method:jsonrpc-api-handler.response', pack: msg, response});
-                                        return response;
-                                    })
-                                    .catch((error) => {
-                                        this.log('trace', {in: 'method:jsonrpc-api-handler.response', pack: msg, error});
-                                        return {id: id, error: serializeError(error)};
-                                    });
+                                try {
+                                    let response = {id, ...(await this.apiRequestReceived(msg))};
+                                    this.log('trace', {in: 'method:jsonrpc-api-handler.response', pack: msg, response});
+                                    return response;
+                                } catch (error) {
+                                    this.log('trace', {in: 'method:jsonrpc-api-handler.response', pack: msg, error});
+                                    return {id, error: serializeError(error)};
+                                }
                             },
                             options: {
                                 tags: ['api'],
