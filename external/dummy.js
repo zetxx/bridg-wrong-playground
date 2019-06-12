@@ -19,6 +19,14 @@ module.exports = (Node) => {
             }
             return this.externalIn({result, meta: newMeta});
         }
+
+        getInternalCommunicationContext(meta) {
+            this.log('debug', {in: 'getInternalCommunicationContext', meta});
+            return super.getInternalCommunicationContext(meta, {
+                lib: this.lib || {},
+                log: (...args) => this.log(...args)
+            });
+        }
     }
 
     return Http;
