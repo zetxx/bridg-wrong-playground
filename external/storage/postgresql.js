@@ -5,7 +5,7 @@ const {Pool} = require('pg');
 // !!!! WARNING, SQL INJECTIONS POSSIBLE
 
 module.exports = (Node) => {
-    class Http extends Node {
+    class Postgre extends Node {
         constructor(args) {
             super(args);
             this.setStore(
@@ -32,17 +32,17 @@ module.exports = (Node) => {
                 let client = await this.pool.connect();
                 await client.query('SELECT NOW()');
                 client.release();
-                this.log('info', {connect: 'succesfull'});
+                this.log('info', {in: 'postgre.start', connect: 'succesfull'});
                 return super.start();
             } catch (e) {
-                this.log('error', {connect: 'failed', error: e});
+                this.log('error', {in: 'postgre.start', connect: 'failed', error: e});
                 throw e;
             }
         }
 
         async externalOut({result: {table, insert, select, fn}, error, meta}) {
             let {schema, database} = this.getStore(['config', 'storage']);
-            this.log('trace', {in: 'externalOut', message: {table, insert, select}, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
+            this.log('trace', {in: 'postgre.externalOut', message: {table, insert, select}, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
             var query;
             let fullObjectName = [database, schema, table || (fn && fn.name)].join('.');
             let fields = Object.keys(insert || select || {});
@@ -60,10 +60,10 @@ module.exports = (Node) => {
             let client = await this.pool.connect();
             try {
                 let res = (await client.query(query)) || {};
-                this.log('trace', {in: 'externalOut', result: res.rows, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
+                this.log('trace', {in: 'postgre.externalOut', result: res.rows, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
                 return this.externalIn({result: res.rows, meta});
             } catch (e) {
-                this.log('error', {in: 'externalOut', error: e, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
+                this.log('error', {in: 'postgre.externalOut', error: e, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
                 return this.externalIn({error: e, meta});
             } finally {
                 client.release();
@@ -71,5 +71,5 @@ module.exports = (Node) => {
         }
     }
 
-    return Http;
+    return Postgre;
 };

@@ -5,7 +5,7 @@ const uuid = require('uuid/v4');
 const rc = require('rc');
 
 module.exports = (Node) => {
-    class ApiHttp extends Node {
+    class ApiUdp extends Node {
         constructor() {
             super();
             this.apiRoutes = [];
@@ -24,10 +24,10 @@ module.exports = (Node) => {
                         }).api)
                     )
                 ))
-                .then(() => this.log('info', {in: 'start', message: `api-udp pending: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
+                .then(() => this.log('info', {in: 'apiUdp.start', message: `api-udp pending: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
                 .then(() => (new Promise((resolve, reject) => {
                     server.on('listening', resolve);
-                    server.on('error', (error) => this.log('error', {in: 'udp.server:on.error', text: 'udp server error', error}));
+                    server.on('error', (error) => this.log('error', {in: 'apiUdp.start.error', text: 'udp server error', error}));
                     server.on('message', (buf, rinfo) => {
                         var r = {};
                         try {
@@ -47,7 +47,7 @@ module.exports = (Node) => {
                     });
                     server.bind(this.getStore(['config', 'api']));
                 })))
-                .then(() => this.log('info', {in: 'start', message: `api-udp ready: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
+                .then(() => this.log('info', {in: 'apiUdp.start', message: `api-udp ready: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
                 .then(() => (this.getStore(['config', 'api'])));
         }
 
@@ -56,5 +56,5 @@ module.exports = (Node) => {
             super.registerApiMethod({method: [method, direction].join('.'), fn});
         }
     }
-    return ApiHttp;
+    return ApiUdp;
 };

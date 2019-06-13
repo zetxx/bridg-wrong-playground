@@ -27,7 +27,7 @@ const validate = (log, {params = Joi.object().required(), method = 'dummy.method
         }).optionalKeys('id').required(),
         failAction: (request, h, err) => {
             if (err) {
-                log('error', {in: 'http-api-fail-handler:method:failAction', error: err, payload: request.payload});
+                log('error', {in: 'apiHttp.handler.error', error: err, payload: request.payload});
                 throw Boom.badRequest('ValidationError');
             }
             throw err;
@@ -55,7 +55,7 @@ module.exports = (Node) => {
                         }).api)
                     )
                 ))
-                .then(() => this.log('info', {in: 'start', message: `api-http pending: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
+                .then(() => this.log('info', {in: 'apiHttp.start', message: `pending: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
                 .then(() => (new Promise((resolve, reject) => {
                     const server = Hapi.server(this.getStore(['config', 'api']));
                     server.route({
@@ -75,25 +75,25 @@ module.exports = (Node) => {
                             tags: ['api'],
                             handler: ({payload: {params, id = 0, method, meta: {globTraceId} = {}} = {}}, h) => {
                                 const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
-                                this.log('trace', {in: 'method:jsonrpc-api-handler.request.response', pack: msg, error: 'MethodNotFound'});
+                                this.log('trace', {in: 'apiHttp.handler.request.response', pack: msg, error: 'MethodNotFound'});
                                 return {id, error: 'MethodNotFound'};
                             }
                         }
                     });
                     this.apiRoutes.map(({methodName, validate: {input}, cors, ...route}) => {
-                        this.log('debug', {in: 'api.route.register', methodName});
+                        this.log('debug', {in: 'apiHttp.route.register', methodName});
                         return server.route(Object.assign({
                             method: 'POST',
                             path: `/JSONRPC/${methodName}`,
                             handler: async({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
                                 const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
-                                this.log('trace', {in: 'method:jsonrpc-api-handler.request', pack: msg});
+                                this.log('trace', {in: 'apiHttp.handler.request', pack: msg});
                                 try {
                                     let response = {id, ...(await this.apiRequestReceived(msg))};
-                                    this.log('trace', {in: 'method:jsonrpc-api-handler.response', pack: msg, response});
+                                    this.log('trace', {in: 'apiHttp.handler.response', pack: msg, response});
                                     return response;
                                 } catch (error) {
-                                    this.log('trace', {in: 'method:jsonrpc-api-handler.response', pack: msg, error});
+                                    this.log('trace', {in: 'apiHttp.handler.response', pack: msg, error});
                                     return {id, error: serializeError(error)};
                                 }
                             },
@@ -115,7 +115,7 @@ module.exports = (Node) => {
                     ]).then(() => server.start());
                 })))
                 .then(() => this.log('info', {
-                    in: 'start',
+                    in: 'apiHttp.start',
                     swaggerUrl: `http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`,
                     message: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))}`
                 }))

@@ -9,13 +9,13 @@ module.exports = (Node) => {
         start() {
             return super.start()
                 .then(() => this.initLogger())
-                .then(() => this.log('info', {in: 'start', message: 'ready'}));
+                .then(() => this.log('info', {in: 'logger.start', message: 'ready'}));
         }
 
         initLogger() {
             this.resolve('logger')
                 .then((logger) => (this.logWire = logger))
-                .catch((error) => this.log('error', {error}) | this.initLogger());
+                .catch((error) => this.log('error', {in: 'logger.initLogger', message: 'ready'}, {error}) | this.initLogger());
             return Promise.resolve();
         }
 

@@ -11,7 +11,7 @@ module.exports = (Node) => {
             return super.start()
                 .then(() => setInterval(() => this.cleanupLogQueue(), 1000))
                 .then(() => this.initLogger())
-                .then(() => this.log('info', {in: 'start', message: 'ready'}));
+                .then(() => this.log('info', {in: 'logger.start', message: 'ready'}));
         }
 
         initLogger() {
@@ -22,7 +22,7 @@ module.exports = (Node) => {
                     }
                     throw logger.e;
                 })
-                .catch((error) => (this.log('error', {error}) | this.initLogger()));
+                .catch((error) => (this.log('error', {in: 'logger.initLogger', error}) | this.initLogger()));
             return Promise.resolve();
         }
 

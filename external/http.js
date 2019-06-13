@@ -4,7 +4,7 @@ const request = require('request-promise-native');
 const codec = () => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
 
 module.exports = (Node) => {
-    class Http extends Node {
+    class ExternalHttp extends Node {
         constructor({codec, ...rest}) {
             super(rest);
             this.codec = codec;
@@ -30,15 +30,15 @@ module.exports = (Node) => {
         }
 
         triggerEvent(event, message = {}) {
-            this.log('debug', {in: 'triggerEvent', event, message});
+            this.log('debug', {in: 'externalHttp.triggerEvent', event, message});
             return this.findExternalMethod({method: `event.${event}`})
                 .then((fn) => fn(this.getInternalCommunicationContext({direction: 'in'}), message, {}))
                 .then((result) => this.externalOut({result, meta: {method: event, event: true}}))
-                .catch((error) => this.log('error', {in: 'method:triggerEvent', error}));
+                .catch((error) => this.log('error', {in: 'externalHttp.triggerEvent', error}));
         }
 
         externalOut({result, error, meta}) {
-            this.log('debug', {in: 'externalOut', message: result, error, meta});
+            this.log('debug', {in: 'externalHttp.externalOut', message: result, error, meta});
             let newMeta = {...meta};
             if (meta && meta.event) {
                 newMeta = {method: [meta.method, 'response'].join('.')};
@@ -49,11 +49,11 @@ module.exports = (Node) => {
                     return this.externalIn({result: requestResult, meta: newMeta});
                 })
                 .catch((error) => {
-                    this.log('error', {in: 'externalIn', meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, error});
+                    this.log('error', {in: 'externalHttp.externalIn', meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, error});
                     return this.externalIn({error, meta: newMeta});
                 });
         }
     }
 
-    return Http;
+    return ExternalHttp;
 };
