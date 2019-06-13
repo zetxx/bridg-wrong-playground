@@ -59,7 +59,6 @@ module.exports = (Node) => {
                         this.connected = true;
                         this.socket.on('error', (e) => {
                             this.log('error', {in: 'tcp.connect.error', error: e});
-                            throw e;
                         });
                         this.log('info', {in: 'tcp.connect', text: 'network connected'});
                         resolve();
