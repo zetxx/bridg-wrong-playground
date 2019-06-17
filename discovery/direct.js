@@ -1,5 +1,4 @@
 const rc = require('rc');
-const resolver = require('mdns-resolver').resolveSrv;
 const pso = require('parse-strings-in-object');
 const jsonrpcClient = {
     http: require('../clients/jsonrpc/http'),
@@ -40,16 +39,16 @@ module.exports = (Node) => {
             return super.stop();
         }
 
-        resolve(serviceName, apiClient) {
+        async resolve(serviceName, apiClient) {
             var sn = this.resolveMap[serviceName] || serviceName;
             if (!this.internalRemoteServices[sn]) {
                 this.internalRemoteServices[sn] = jsonrpcClient[apiClient || 'http']({hostname: sn, port: this.globalPort});
                 return this.internalRemoteServices[sn];
             }
-            return Promise.resolve(this.internalRemoteServices[sn]);
+            return this.internalRemoteServices[sn];
         }
 
-        remoteApiRequest({destination, message, meta}) {
+        async remoteApiRequest({destination, message, meta}) {
             var [nodeName, ...rest] = destination.split('.');
             return this.resolve(nodeName)
                 .then((request) => request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})}))
