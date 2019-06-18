@@ -30,7 +30,7 @@ module.exports = ({hostname = 'localhost', port = 80}) => {
             return reject(e);
         }
         client.send(messageBuffer, 0, messageBuffer.length, port, hostname, function(err, bytes) {
-            err && console.error(err);
+            err && console.error(err, {hostname, port, method, message, ...rest, meta});
         });
     }));
 };
