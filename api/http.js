@@ -132,6 +132,13 @@ module.exports = (Node) => {
             }
             directions.map((direction) => super.registerApiMethod({method: [method, direction].join('.'), fn}));
         }
+        registerApiMethods(list = []) {
+            list.map((item) => this.registerApiMethod(item));
+        }
+
+        registerExternalMethods(list = []) {
+            list.map((item) => this.registerExternalMethod(item));
+        }
     }
     return ApiHttp;
 };
