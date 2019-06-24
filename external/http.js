@@ -49,7 +49,7 @@ module.exports = (Node) => {
                     return this.externalIn({result: requestResult, meta: newMeta});
                 })
                 .catch((error) => {
-                    this.log('error', {in: 'externalHttp.externalIn', meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, error, requestArgs: result});
+                    this.log('error', {in: 'externalHttp.externalOut.catch', meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, error, requestArgs: result});
                     return this.externalIn({error, meta: newMeta});
                 });
         }
