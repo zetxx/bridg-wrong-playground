@@ -75,6 +75,10 @@ module.exports = (Node) => {
             });
         }
 
+        async stop() {
+            return super.stop();
+        }
+
         async triggerEvent(event, message = {}) {
             this.log('debug', {in: 'tcp.triggerEvent', event, message});
             try {

@@ -9,6 +9,7 @@ module.exports = (Node) => {
         constructor() {
             super();
             this.apiRoutes = [];
+            this.apiUdpServer;
         }
 
         async start() {
@@ -44,6 +45,7 @@ module.exports = (Node) => {
                     }
                 });
                 server.bind(this.getStore(['config', 'api']));
+                this.apiUdpServer = server;
             }));
             this.log('info', {in: 'apiUdp.start', message: `api-udp ready: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             return this.getStore(['config', 'api']);
@@ -52,6 +54,10 @@ module.exports = (Node) => {
         registerApiMethod({method, direction, fn}) {
             direction === 'in' && this.apiRoutes.push({methodName: method});
             super.registerApiMethod({method: [method, direction].join('.'), fn});
+        }
+        async stop() {
+            this.apiUdpServer.close();
+            return super.stop();
         }
     }
     return ApiUdp;

@@ -44,6 +44,7 @@ module.exports = (Node) => {
         constructor() {
             super();
             this.apiRoutes = [];
+            this.httpApiServer;
         }
 
         async start() {
@@ -107,6 +108,7 @@ module.exports = (Node) => {
             });
             await server.register([Inert, Vision, {plugin: HapiSwagger, options: swaggerOptions}]);
             await server.start();
+            this.httpApiServer = server;
             this.log('info', {
                 in: 'apiHttp.start',
                 swaggerUrl: `http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`,
@@ -131,6 +133,11 @@ module.exports = (Node) => {
 
         registerExternalMethods(list = []) {
             list.map((item) => this.registerExternalMethod(item));
+        }
+        async stop() {
+            this.log('info', {in: 'apiHttp.stop', message: `stoping: ${JSON.stringify(this.getStore(['config', 'api']))}`});
+            await this.httpApiServer.stop();
+            return super.stop();
         }
     }
     return ApiHttp;

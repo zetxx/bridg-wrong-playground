@@ -4,6 +4,7 @@
     "version": "2.3.8",
     "devDependencies": {
         "rc": "*",
+        "why-is-node-running": "*",
         "parse-strings-in-object": "*",
         "bridg-wrong": "*",
         "@hapi/hapi": "*",

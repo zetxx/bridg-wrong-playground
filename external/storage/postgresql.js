@@ -40,6 +40,11 @@ module.exports = (Node) => {
             }
         }
 
+        async stop() {
+            this.pool.destroy();
+            return super.stop();
+        }
+
         async externalOut({result: {table, insert, select, fn}, error, meta}) {
             let {schema, database} = this.getStore(['config', 'storage']);
             this.log('trace', {in: 'postgre.externalOut', message: {table, insert, select}, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});

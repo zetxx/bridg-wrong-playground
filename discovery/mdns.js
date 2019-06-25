@@ -42,17 +42,16 @@ module.exports = (Node) => {
                 .then((httpApi) => new Promise((resolve, reject) => {
                     this.domain.map((domain) => {
                         let disc = discovery({domain: `${domain}.local`, ...this.discoveryOptions});
-                        this.cleanup.push(() => Promise.resolve().then(() => disc.unannounce(this.name, httpApi.port)).then(() => disc.destroy(this.name, httpApi.port)));
+                        this.cleanup.push(() => Promise.resolve().then(() => disc.unannounce(this.name, httpApi.port)).then(() => disc.destroy(() => 1)));
                         disc.announce(this.name, httpApi.port);
                     });
                     resolve();
                 }))
                 .then(() => this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: ready`}));
         }
-
-        stop() {
-            return super.stop()
-                .then(() => this.cleanup.map((fn) => fn()));
+        async stop() {
+            this.cleanup.map((fn) => fn());
+            return super.stop();
         }
 
         resolve(serviceName, apiClient) {

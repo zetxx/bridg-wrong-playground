@@ -36,7 +36,7 @@ module.exports = (Node) => {
             return httpApi;
         }
 
-        stop() {
+        async stop() {
             return super.stop();
         }
 
