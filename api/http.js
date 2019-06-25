@@ -8,6 +8,7 @@ const HapiSwagger = require('hapi-swagger');
 const pso = require('parse-strings-in-object');
 const rc = require('rc');
 const serializeError = require('serialize-error');
+const errors = require('bridg-wrong/lib/errors');
 
 const swaggerOptions = {
     info: {
@@ -16,15 +17,18 @@ const swaggerOptions = {
     }
 };
 
-const validate = (log, {params = Joi.object().required(), method = 'dummy.method'} = {}) => {
+const validate = (log, {params = Joi.object().required(), isNotification = 0, method = 'dummy.method'} = {}) => {
+    let payload = {
+        jsonrpc: Joi.any().valid('2.0').required(),
+        id: Joi.number().example([1]).required(),
+        meta: Joi.object().required(),
+        method: Joi.string().required().example([method]).required(),
+        params
+    };
+    isNotification && (delete payload.id);
+
     return {
-        payload: Joi.object().keys({
-            jsonrpc: Joi.any().valid('2.0').required(),
-            id: Joi.number().example([1]),
-            meta: Joi.object().required(),
-            method: Joi.string().required().example([method]),
-            params
-        }).optionalKeys('id').required(),
+        payload: Joi.object().keys(payload).required(),
         failAction: (request, h, err) => {
             if (err) {
                 log('error', {in: 'apiHttp.handler.error', error: err, payload: request.payload});
@@ -42,84 +46,73 @@ module.exports = (Node) => {
             this.apiRoutes = [];
         }
 
-        start() {
-            return super.start()
-                .then(() => (
-                    this.setStore(
-                        ['config', 'api'],
-                        pso(rc(this.getNodeName() || 'buzzer', {
-                            api: {
-                                port: 8080,
-                                address: '0.0.0.0'
-                            }
-                        }).api)
-                    )
-                ))
-                .then(() => this.log('info', {in: 'apiHttp.start', message: `pending: ${JSON.stringify(this.getStore(['config', 'api']))}`}))
-                .then(() => (new Promise((resolve, reject) => {
-                    const server = Hapi.server(this.getStore(['config', 'api']));
-                    server.route({
-                        method: 'GET',
-                        path: '/healthz',
-                        options: {
-                            tags: ['api'],
-                            handler: (req, h) => {
-                                return {healthCheck: true};
-                            }
+        async start() {
+            await super.start();
+            this.setStore(
+                ['config', 'api'],
+                pso(rc(this.getNodeName() || 'buzzer', {
+                    api: {
+                        port: 8080,
+                        address: '0.0.0.0'
+                    }
+                }).api)
+            );
+            this.log('info', {in: 'apiHttp.start', message: `pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});
+            const server = Hapi.server(this.getStore(['config', 'api']));
+            server.route({
+                method: 'GET',
+                path: '/healthz',
+                options: {
+                    tags: ['api'],
+                    handler: (req, h) => {
+                        return {healthCheck: true};
+                    }
+                }
+            });
+            server.route({
+                method: '*',
+                path: '/JSONRPC/{method*}',
+                options: {
+                    tags: ['api'],
+                    handler: ({payload: {params, id = 0, method, meta: {globTraceId} = {}} = {}}, h) => {
+                        const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
+                        this.log('error', {in: 'apiHttp.handler.request.response', pack: msg, error: 'MethodNotFound'});
+                        return {id, error: serializeError(errors.methodNotFound(params))};
+                    }
+                }
+            });
+            this.apiRoutes.map(({methodName, validate: {input, isNotification}, cors, ...route}) => {
+                this.log('debug', {in: 'apiHttp.route.register', methodName});
+                return server.route(Object.assign({
+                    method: 'POST',
+                    path: `/JSONRPC/${methodName}`,
+                    handler: async({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
+                        const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
+                        this.log('trace', {in: 'apiHttp.handler.request', pack: msg});
+                        try {
+                            let response = {id, result: await this.apiRequestReceived(msg)};
+                            this.log('trace', {in: 'apiHttp.handler.response', pack: msg, response});
+                            return response;
+                        } catch (error) {
+                            this.log('error', {in: 'apiHttp.handler.response', pack: msg, error});
+                            return {id, error: serializeError(error)};
                         }
-                    });
-                    server.route({
-                        method: '*',
-                        path: '/JSONRPC/{method*}',
-                        options: {
-                            tags: ['api'],
-                            handler: ({payload: {params, id = 0, method, meta: {globTraceId} = {}} = {}}, h) => {
-                                const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
-                                this.log('trace', {in: 'apiHttp.handler.request.response', pack: msg, error: 'MethodNotFound'});
-                                return {id, error: 'MethodNotFound'};
-                            }
-                        }
-                    });
-                    this.apiRoutes.map(({methodName, validate: {input}, cors, ...route}) => {
-                        this.log('debug', {in: 'apiHttp.route.register', methodName});
-                        return server.route(Object.assign({
-                            method: 'POST',
-                            path: `/JSONRPC/${methodName}`,
-                            handler: async({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
-                                const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
-                                this.log('trace', {in: 'apiHttp.handler.request', pack: msg});
-                                try {
-                                    let response = {id, ...(await this.apiRequestReceived(msg))};
-                                    this.log('trace', {in: 'apiHttp.handler.response', pack: msg, response});
-                                    return response;
-                                } catch (error) {
-                                    this.log('trace', {in: 'apiHttp.handler.response', pack: msg, error});
-                                    return {id, error: serializeError(error)};
-                                }
-                            },
-                            options: {
-                                tags: ['api'],
-                                cors,
-                                validate: validate(this.log.bind(this), {params: input, method: methodName})
-                            }
-                        }, route));
-                    });
-                    server.events.on('start', resolve);
-                    return server.register([
-                        Inert,
-                        Vision,
-                        {
-                            plugin: HapiSwagger,
-                            options: swaggerOptions
-                        }
-                    ]).then(() => server.start());
-                })))
-                .then(() => this.log('info', {
-                    in: 'apiHttp.start',
-                    swaggerUrl: `http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`,
-                    message: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))}`
-                }))
-                .then(() => (this.getStore(['config', 'api'])));
+                    },
+                    options: {
+                        tags: ['api'],
+                        cors,
+                        validate: validate(this.log.bind(this), {params: input, method: methodName, isNotification})
+                    }
+                }, route));
+            });
+            await server.register([Inert, Vision, {plugin: HapiSwagger, options: swaggerOptions}]);
+            await server.start();
+            this.log('info', {
+                in: 'apiHttp.start',
+                swaggerUrl: `http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`,
+                message: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))}`
+            });
+            return this.getStore(['config', 'api']);
         }
 
         registerApiMethod({method, direction = 'both', meta: {validate, cors} = {}, fn}) {

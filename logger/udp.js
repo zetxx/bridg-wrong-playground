@@ -14,16 +14,16 @@ module.exports = (Node) => {
                 .then(() => this.log('info', {in: 'logger.start', message: 'ready'}));
         }
 
-        initLogger() {
-            this.resolve('logger', 'udp')
-                .then((logger) => {
-                    if (!(logger.e instanceof Error)) {
-                        return (this.logWire = logger);
-                    }
-                    throw logger.e;
-                })
-                .catch((error) => (this.log('error', {in: 'logger.initLogger', error}) | this.initLogger()));
-            return Promise.resolve();
+        async initLogger() {
+            try {
+                let logger = await this.resolve('logger', 'udp');
+                if (!(logger.e instanceof Error)) {
+                    return (this.logWire = logger);
+                }
+            } catch (error) {
+                this.log('error', {in: 'logger.initLogger', error});
+                this.initLogger();
+            }
         }
 
         cleanupLogQueue() {

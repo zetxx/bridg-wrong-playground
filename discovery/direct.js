@@ -29,10 +29,11 @@ module.exports = (Node) => {
             return this.name;
         }
 
-        start() {
-            return super.start()
-                .then((httpApi) => Promise.resolve().then(() => this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: pending`})).then(() => httpApi))
-                .then(() => this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: ready`}));
+        async start() {
+            this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: pending`});
+            let httpApi = await super.start();
+            this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: ready`});
+            return httpApi;
         }
 
         stop() {
@@ -51,13 +52,9 @@ module.exports = (Node) => {
 
         async remoteApiRequest({destination, message, meta}) {
             var [nodeName, ...rest] = destination.split('.');
-            this.log('info', {in: 'discovery.remoteApiRequest', args: {destination, message, meta}});
-            return this.resolve(nodeName)
-                .then((request) => request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})}))
-                .then((r) => {
-                    return r;
-                })
-                .catch((error) => ({error}));
+            this.log('trace', {in: 'discovery.remoteApiRequest', args: {destination, message, meta}});
+            let request = await this.resolve(nodeName);
+            return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})})
         }
     }
     return ApiHttpDiscovery;

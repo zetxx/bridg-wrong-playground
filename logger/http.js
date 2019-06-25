@@ -12,20 +12,21 @@ module.exports = (Node) => {
                 .then(() => this.log('info', {in: 'logger.start', message: 'ready'}));
         }
 
-        initLogger() {
-            this.resolve('logger')
-                .then((logger) => (this.logWire = logger))
-                .catch((error) => this.log('error', {in: 'logger.initLogger', message: 'ready'}, {error}) | this.initLogger());
-            return Promise.resolve();
+        async initLogger() {
+            try {
+                this.logWire = await this.resolve('logger');
+            } catch (error) {
+                this.log('error', {in: 'logger.initLogger', message: 'ready'}, {error});
+                this.initLogger();
+            }
         }
 
-        log(level, message) {
+        async log(level, message) {
             if (message && message.error) {
                 message.error = (message.error instanceof Error && serializeError(message.error)) || message.error;
             }
             this.logWire && this.logWire({method: 'log', params: {level, message, fingerPrint: this.getFingerprint(), procesUid: this.pUid}, meta: {isNotification: 1}}).catch((e) => console.error(e));
             !this.logWire && super.log(level, message);
-            return Promise.resolve({});
         }
 
         stop() {

@@ -29,29 +29,31 @@ module.exports = (Node) => {
                 ));
         }
 
-        triggerEvent(event, message = {}) {
-            this.log('debug', {in: 'externalHttp.triggerEvent', event, message});
-            return this.findExternalMethod({method: `event.${event}`})
-                .then((fn) => fn(this.getInternalCommunicationContext({direction: 'in'}), message, {}))
-                .then((result) => this.externalOut({result, meta: {method: event, event: true}}))
-                .catch((error) => this.log('error', {in: 'externalHttp.triggerEvent', error}));
+        async triggerEvent(event, message = {}) {
+            this.log('trace', {in: 'externalHttp.triggerEvent', event, message});
+            try {
+                let fn = this.findExternalMethod({method: `event.${event}`});
+                let result = await fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
+                return this.externalOut({result, meta: {method: event, event: true}});
+            } catch (error) {
+                this.log('error', {in: 'externalHttp.triggerEvent', error});
+            }
         }
 
-        externalOut({result, error, meta}) {
-            this.log('debug', {in: 'externalHttp.externalOut', message: result, error, meta});
+        async externalOut({result, error, meta}) {
+            this.log('trace', {in: 'externalHttp.externalOut', message: result, error, meta});
             let newMeta = {...meta};
             if (meta && meta.event) {
                 newMeta = {method: [meta.method, 'response'].join('.')};
             }
             let timeout = this.getStore(['config', 'http', 'timeout']);
-            return request({timeout, ...result})
-                .then((requestResult) => {
-                    return this.externalIn({result: requestResult, meta: newMeta});
-                })
-                .catch((error) => {
-                    this.log('error', {in: 'externalHttp.externalOut.catch', meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, error, requestArgs: result});
-                    return this.externalIn({error, meta: newMeta});
-                });
+            try {
+                let requestResult = await request({timeout, ...result});
+                return this.externalIn({result: requestResult, meta: newMeta});
+            } catch (error) {
+                this.log('error', {in: 'externalHttp.externalOut.catch', meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, error, requestArgs: result});
+                return this.externalIn({error, meta: newMeta});
+            }
         }
     }
 

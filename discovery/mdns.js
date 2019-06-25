@@ -69,14 +69,11 @@ module.exports = (Node) => {
             return Promise.resolve(this.internalRemoteServices[sn]);
         }
 
-        remoteApiRequest({destination, message, meta}) {
+        async remoteApiRequest({destination, message, meta}) {
             var [nodeName, ...rest] = destination.split('.');
-            return this.resolve(nodeName)
-                .then((request) => request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})}))
-                .then((r) => {
-                    return r;
-                })
-                .catch((error) => ({error}));
+            this.log('trace', {in: 'discovery.remoteApiRequest', args: {destination, message, meta}});
+            let request = await this.resolve(nodeName);
+            return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})});
         }
     }
     return ApiHttpDiscovery;

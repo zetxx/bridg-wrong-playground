@@ -60,7 +60,7 @@ module.exports = (Node) => {
             let client = await this.pool.connect();
             try {
                 let res = (await client.query(query)) || {};
-                this.log('trace', {in: 'postgre.externalOut', result: res.rows, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
+                this.log('debug', {in: 'postgre.externalOut', result: res.rows, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});
                 return this.externalIn({result: res.rows, meta});
             } catch (e) {
                 this.log('error', {in: 'postgre.externalOut', error: e, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}});

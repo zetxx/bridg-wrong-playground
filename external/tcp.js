@@ -75,11 +75,14 @@ module.exports = (Node) => {
             });
         }
 
-        triggerEvent(event, message = {}) {
+        async triggerEvent(event, message = {}) {
             this.log('debug', {in: 'tcp.triggerEvent', event, message});
-            return this.findExternalMethod({method: `event.${event}`})
-                .then((fn) => fn(this.getInternalCommunicationContext({direction: 'in'}), message, {}))
-                .catch((error) => this.log('error', {in: 'tcp.triggerEvent', error}));
+            try {
+                let fn = this.findExternalMethod({method: `event.${event}`});
+                return fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
+            } catch (error) {
+                this.log('error', {in: 'tcp.triggerEvent', error});
+            }
         }
 
         getIncomingMessages(messages = []) {
@@ -124,35 +127,34 @@ module.exports = (Node) => {
             return {};
         }
 
-        externalIn({result}) {
-            this.log('debug', {in: 'tcp.externalIn', result});
-            return this.decode(result)
-                .then(({parsed}) => {
-                    this.log('debug', {in: 'tcp.externalIn', parsed});
-                    var result = parsed;
-                    const globTraceId = uuid();
-                    var {apiRequestId} = this.matchExternalInToTx(result);
-                    return super.externalIn({result, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId, apiRequestId}});
-                })
-                .catch((error) => this.log('error', {in: 'tcp.externalIn', error}));
+        async externalIn({result}) {
+            this.log('trace', {in: 'tcp.externalIn', result});
+            try {
+                const globTraceId = uuid();
+                let {parsed} = await this.decode(result);
+                this.log('debug', {in: 'tcp.externalIn', parsed});
+                var {apiRequestId} = this.matchExternalInToTx(parsed);
+                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId, apiRequestId}});
+            } catch (error) {
+                this.log('error', {in: 'tcp.externalIn', error});
+            }
         }
 
-        externalOut({result, error, meta}) {
-            this.log('debug', {in: 'tcp.externalOut', result, error, meta});
+        async externalOut({result, error, meta}) {
+            this.log('trace', {in: 'tcp.externalOut', result, error, meta});
             if (error) {
-                return Promise.resolve({error})
-                    .then(() => {
-                        return this.socket.end(() => this.socket.destroy());
-                    });
+                this.socket.end(() => this.socket.destroy());
+                throw error;
             }
-            return this.encode(result)
-                .then((buffer) => {
-                    this.log('debug', {in: 'tcp.externalOut', worldOutBuffer: buffer.toString('hex')});
-                    return this.socket.write(buffer);
-                })
-                .catch((e) => {
-                    return this.log('error', {in: 'tcp.externalOut', error: e});
-                });
+            try {
+                let buffer = await this.encode(result);
+                this.log('debug', {in: 'tcp.externalOut', worldOutBuffer: buffer.toString('hex')});
+                return this.socket.write(buffer);
+            } catch (error) {
+                this.socket.end(() => this.socket.destroy());
+                this.log('error', {in: 'tcp.externalOut.catch', error});
+                throw error;
+            }
         }
     }
 
