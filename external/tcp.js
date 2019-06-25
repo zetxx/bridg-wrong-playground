@@ -71,8 +71,6 @@ module.exports = (Node) => {
                         this.log('warn', {in: 'tcp.connect', text: 'connectionClosed'});
                         this.triggerEvent('externalDisconnected');
                     });
-                } else {
-                    this.socket.end();
                 }
             });
         }
