@@ -37,7 +37,7 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                 if (rp.error) {
                     return reject({...rp, meta});
                 }
-                return resolve(rp);
+                return resolve(rp.result);
             });
         });
         req.on('error', (err) => {
