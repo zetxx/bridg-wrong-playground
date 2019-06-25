@@ -44,7 +44,7 @@ module.exports = (Node) => {
         constructor() {
             super();
             this.apiRoutes = [];
-            this.httpApiServer;
+            this.httpApiServer = null;
         }
 
         async start() {
@@ -106,8 +106,12 @@ module.exports = (Node) => {
                     }
                 }, route));
             });
-            await server.register([Inert, Vision, {plugin: HapiSwagger, options: swaggerOptions}]);
-            await server.start();
+            try {
+                await server.register([Inert, Vision, {plugin: HapiSwagger, options: swaggerOptions}]);
+                await server.start();
+            } catch (e) {
+                throw e;
+            }
             this.httpApiServer = server;
             this.log('info', {
                 in: 'apiHttp.start',
@@ -136,7 +140,7 @@ module.exports = (Node) => {
         }
         async stop() {
             this.log('info', {in: 'apiHttp.stop', message: `stoping: ${JSON.stringify(this.getStore(['config', 'api']))}`});
-            await this.httpApiServer.stop();
+            await this.httpApiServer.stop({timeout: 2000});
             return super.stop();
         }
     }

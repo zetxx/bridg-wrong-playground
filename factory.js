@@ -1,10 +1,9 @@
 const MainNode = require('bridg-wrong');
-const log = require('why-is-node-running');
+// setTimeout(require('why-is-node-running'), 10000);
 
 const execOrder = [
     'state', 'api', 'discovery', 'logger', 'service', 'external'
 ];
-
 module.exports = (buildList) => {
     let producedNode = execOrder.reduce((prev, curr) => {
         if (buildList[curr]) {
@@ -25,7 +24,6 @@ module.exports = (buildList) => {
             process.on('SIGTERM', () => {
                 return (this.stop && this.stop());
             });
-            setInterval(log, 3000);
             return s;
         }
     }

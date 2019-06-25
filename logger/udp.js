@@ -6,12 +6,15 @@ module.exports = (Node) => {
             super(args);
             this.logWire = null;
             this.logQueue = [];
+            this.queueCleanInterval = null;
+            this.stopping = false;
         }
-        start() {
-            return super.start()
-                .then(() => setInterval(() => this.cleanupLogQueue(), 1000))
-                .then(() => this.initLogger())
-                .then(() => this.log('info', {in: 'logger.start', message: 'ready'}));
+        async start() {
+            let s = await super.start();
+            this.queueCleanInterval = setInterval(() => this.cleanupLogQueue(), 1000);
+            await this.initLogger();
+            this.log('info', {in: 'logger.start', message: 'ready'});
+            return s;
         }
 
         async initLogger() {
@@ -22,7 +25,7 @@ module.exports = (Node) => {
                 }
             } catch (error) {
                 this.log('error', {in: 'logger.initLogger', error});
-                this.initLogger();
+                !this.stopping && this.initLogger();
             }
         }
 
@@ -31,16 +34,21 @@ module.exports = (Node) => {
                 this.logQueue.map((entry) => this.logWire(entry).catch((e) => console.error(e)));
                 this.logQueue = [];
             }
+            this.stopping && clearInterval(this.queueCleanInterval);
         }
 
-        log(level, message) {
+        async log(level, message) {
             if (message && message.error) {
                 message.error = (message.error instanceof Error && serializeError(message.error)) || message.error;
             }
 
             this.logQueue.push({method: 'log', params: {level, message, fingerPrint: this.getFingerprint()}, meta: {isNotification: 1}});
             this.cleanupLogQueue();
-            return Promise.resolve({});
+        }
+
+        async stop() {
+            this.stopping = true;
+            return super.stop();
         }
     };
 };

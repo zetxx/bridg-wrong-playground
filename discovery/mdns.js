@@ -51,6 +51,7 @@ module.exports = (Node) => {
         }
         async stop() {
             this.cleanup.map((fn) => fn());
+            Object.keys(this.internalRemoteServices).map((client) => setTimeout(this.internalRemoteServices[client].destroy, 3000));
             return super.stop();
         }
 
@@ -61,11 +62,11 @@ module.exports = (Node) => {
                     return p.then((resolved) => resolver(`${sn}.${domain}.local`)
                         .then(({port, target}) => ({port, host: (this.nameResolve && sn) || target.replace('0.0.0.0', '127.0.0.1')}))
                         .then(({host, port}) => (this.internalRemoteServices[sn] = jsonrpcClient[apiClient || 'http']({hostname: host, port})))
-                        .then(() => this.internalRemoteServices[sn])
+                        .then(() => this.internalRemoteServices[sn].send)
                     );
                 }, Promise.resolve({next: true}));
             }
-            return Promise.resolve(this.internalRemoteServices[sn]);
+            return Promise.resolve(this.internalRemoteServices[sn].send);
         }
 
         async remoteApiRequest({destination, message, meta}) {
