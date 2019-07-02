@@ -121,8 +121,8 @@ module.exports = (Node) => {
             return this.getStore(['config', 'api']);
         }
 
-        registerApiMethod({method, direction = 'both', meta: {validate, cors} = {}, fn}) {
-            (['in', 'both'].indexOf(direction) >= 0) && this.apiRoutes.push({methodName: method, validate: {[`input`]: validate}, cors});
+        registerApiMethod({method, direction = 'both', meta: {validate, cors, isNotification} = {}, fn}) {
+            (['in', 'both'].indexOf(direction) >= 0) && this.apiRoutes.push({methodName: method, validate: {[`input`]: validate, isNotification}, cors});
             var directions = [];
             if (direction === 'both') {
                 directions = ['in', 'out'];
