@@ -31,6 +31,7 @@ module.exports = (Node) => {
             this.connected = false;
             this.socket = undefined;
             this.lib = {...this.lib, connect: () => this.connect()};
+            this.lib = {...this.lib, dissconnect: () => this.dissconnect()};
             return super.start()
                 .then(() => (
                     this.setStore(
@@ -68,10 +69,19 @@ module.exports = (Node) => {
                     });
                     this.socket.on('close', (e) => {
                         this.connected = false;
+                        this.socket.destroy();
+                        this.socket = null;
                         this.log('warn', {in: 'tcp.connect', text: 'connectionClosed'});
                         this.triggerEvent('externalDisconnected');
                     });
                 }
+            });
+        }
+
+        dissconnect() {
+            this.log('debug', {in: 'dissconnect', text: 'connection initialisation'});
+            return new Promise((resolve, reject) => {
+                return this.connected && this.socket.end();
             });
         }
 
