@@ -20,12 +20,11 @@ const swaggerOptions = {
 const validate = (log, {params = Joi.object().required(), isNotification = 0, method = 'dummy.method'} = {}) => {
     let payload = {
         jsonrpc: Joi.any().valid('2.0').required(),
-        id: Joi.number().example([1]).required(),
+        id: (!isNotification && Joi.number().example([1]).required()) || Joi.any().valid(0).example([0]),
         meta: Joi.object().required(),
         method: Joi.string().required().example([method]).required(),
         params
     };
-    isNotification && (delete payload.id);
 
     return {
         payload: Joi.object().keys(payload).required(),
