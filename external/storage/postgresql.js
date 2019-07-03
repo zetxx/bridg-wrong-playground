@@ -41,7 +41,7 @@ module.exports = (Node) => {
         }
 
         async stop() {
-            this.pool.destroy();
+            this.pool.end();
             return super.stop();
         }
 
