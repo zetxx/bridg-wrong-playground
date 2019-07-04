@@ -45,9 +45,9 @@ module.exports = (Node) => {
             this.log('info', {in: 'discovery.resolve', args: {serviceName, apiClient, hostname, globalPort: this.globalPort}});
             if (!this.internalRemoteServices[hostname]) {
                 this.internalRemoteServices[hostname] = jsonrpcClient[apiClient || 'http']({hostname, port: this.globalPort});
-                return this.internalRemoteServices[hostname];
+                return this.internalRemoteServices[hostname].send;
             }
-            return this.internalRemoteServices[hostname];
+            return this.internalRemoteServices[hostname].send;
         }
 
         async remoteApiRequest({destination, message, meta}) {
