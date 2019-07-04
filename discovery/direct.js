@@ -37,6 +37,7 @@ module.exports = (Node) => {
         }
 
         async stop() {
+            Object.keys(this.internalRemoteServices).map((client) => setTimeout(this.internalRemoteServices[client].destroy, 3000));
             return super.stop();
         }
 
