@@ -19,11 +19,13 @@ module.exports = (Node) => {
                     nodeName: name,
                     resolveMap: {
                         logger: 'logger'
-                    }
+                    },
+                    destinationClients: {}
                 }
             }).discovery);
-            var {domain, nameResolve, nodeName, resolveMap, ...discoveryOptions} = rcConf;
+            var {domain, nameResolve, nodeName, resolveMap, destinationClients, ...discoveryOptions} = rcConf;
             this.name = nodeName;
+            this.destinationClients = destinationClients;
             this.resolveMap = resolveMap;
             this.domain = domain.split(',');
             this.nameResolve = nameResolve;
@@ -58,6 +60,7 @@ module.exports = (Node) => {
 
         resolve(serviceName, apiClient) {
             var sn = this.resolveMap[serviceName] || serviceName;
+            apiClient = apiClient || this.destinationClients[serviceName];
             if (!this.internalRemoteServices[sn]) {
                 return this.domain.reduce((p, domain) => {
                     return p.then((resolved) => resolver(`${sn}.${domain}.local`)

@@ -37,13 +37,15 @@ module.exports = (name) => {
         method: 'log',
         direction: 'in',
         fn: function({level = 'info', fingerPrint, ...rest}) {
+            let destinations = this.getState(['config', 'log', 'destinations']);
+            destinations = ((destinations instanceof Array) && destinations) || (destinations && [destinations]);
             try {
                 let toBeLogged = this.sharedContext.log(level, {pid: `${fingerPrint.nodeName}`, ...rest});
-                this.getState(['config', 'log', 'destinations']).map((destination) => this.notification(`${destination}.log`, toBeLogged));
+                destinations.map((destination) => this.notification(`${destination}.log`, toBeLogged));
             } catch (e) {}
             return false;
         }
     });
     service.start()
-        .catch((e) => service.log('error', {in: 'terminal.ready', error: e}));
+        .catch((e) => service.log('error', {in: 'logger.ready', error: e}));
 };

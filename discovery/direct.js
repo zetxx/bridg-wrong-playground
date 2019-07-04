@@ -15,10 +15,12 @@ module.exports = (Node) => {
                         logger: 'logger'
                     },
                     nodeName: name,
-                    globalPort: 3000
+                    globalPort: 3000,
+                    destinationClients: {}
                 }
             }).resolve);
-            var {nodeName, map, globalPort} = rcConf;
+            var {nodeName, map, globalPort, destinationClients} = rcConf;
+            this.destinationClients = destinationClients;
             this.name = nodeName;
             this.resolveMap = map;
             this.globalPort = globalPort;
@@ -43,6 +45,7 @@ module.exports = (Node) => {
 
         async resolve(serviceName, apiClient) {
             var hostname = this.resolveMap[serviceName] || serviceName;
+            apiClient = apiClient || this.destinationClients[serviceName];
             this.log('info', {in: 'discovery.resolve', args: {serviceName, apiClient, hostname, globalPort: this.globalPort}});
             if (!this.internalRemoteServices[hostname]) {
                 this.internalRemoteServices[hostname] = jsonrpcClient[apiClient || 'http']({hostname, port: this.globalPort});
