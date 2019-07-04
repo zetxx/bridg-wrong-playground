@@ -15,6 +15,7 @@ module.exports = (Node) => {
                 discovery: {
                     domain: 'testdomain',
                     nameResolve: false,
+                    loopback: false,
                     nodeName: name,
                     resolveMap: {
                         logger: 'logger'

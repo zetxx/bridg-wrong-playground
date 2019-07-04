@@ -9,7 +9,7 @@ module.exports = (Node) => {
         constructor() {
             super();
             this.apiRoutes = [];
-            this.apiUdpServer;
+            this.apiUdpServer = null;
         }
 
         async start() {
