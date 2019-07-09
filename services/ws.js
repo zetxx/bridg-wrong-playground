@@ -2,7 +2,6 @@ const rc = require('rc');
 const pso = require('parse-strings-in-object');
 const http = require('http');
 const WebSocket = require('ws');
-const url = require('url');
 const Factory = require('bridg-wrong-playground/factory.js');
 const discovery = (pso(rc('', {})).discovery === false && 'direct') || 'mdns';
 const Service = Factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
@@ -14,9 +13,7 @@ class WS extends Service {
             ['config', 'ws'],
             pso(rc(this.getNodeName() || 'buzzer', {
                 ws: {
-                    http: {
-                        port: 10000
-                    }
+                    listenPort: 10000
                 }
             }).ws)
         );
@@ -39,7 +36,7 @@ class WS extends Service {
                 }, []);
             });
         });
-        this.httpServer.listen(this.getStore(['config', 'ws', 'http', 'port']));
+        this.httpServer.listen(this.getStore(['config', 'ws', 'listenPort']));
         this.lib = {
             publish: (...args) => this.publish(...args)
         };
