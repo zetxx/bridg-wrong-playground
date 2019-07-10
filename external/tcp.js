@@ -90,7 +90,7 @@ module.exports = (Node) => {
         }
 
         async triggerEvent(event, message = {}) {
-            this.log('debug', {in: 'tcp.triggerEvent', event, message});
+            this.log('debug', {in: 'tcp.triggerEvent', args: {event, message}});
             try {
                 let fn = this.findExternalMethod({method: `event.${event}`});
                 return fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
@@ -100,7 +100,7 @@ module.exports = (Node) => {
         }
 
         getIncomingMessages(messages = []) {
-            this.log('debug', {in: 'tcp.getIncomingMessages', messages});
+            this.log('debug', {in: 'tcp.getIncomingMessages', args: {messages}});
             var len = rqMsgLen(this.receivedBuffer);
             if ((this.receivedBuffer.length - msgHeaderLen) >= len) {
                 messages.push(this.receivedBuffer.slice(msgHeaderLen, len + msgHeaderLen));
@@ -118,7 +118,7 @@ module.exports = (Node) => {
             this.getIncomingMessages()
                 .map((msgBuf) => Promise.resolve(msgBuf)
                     .then((buffer) => {
-                        this.log('debug', {in: 'tcp.dataReceived', buffer: buffer.toString('hex')});
+                        this.log('debug', {in: 'tcp.dataReceived', args: {buffer: buffer.toString('hex')}});
                         return buffer;
                     })
                     .then((buffer) => this.externalIn({result: buffer})) // send parsed msg to terminal
@@ -127,7 +127,7 @@ module.exports = (Node) => {
         }
 
         matchExternalInToTx(result) {
-            this.log('debug', {in: 'tcp.matchExternalInToTx', result});
+            this.log('debug', {in: 'tcp.matchExternalInToTx', args: {result}});
             var idxRspMatch = this.apiRequestsPool.findIndex(({meta: {responseMatchKey} = {}} = {}) => {
                 if (responseMatchKey && responseMatchKey.messageCoordinationNumber && result && result.messageCoordinationNumber) {
                     return result.messageCoordinationNumber === responseMatchKey.messageCoordinationNumber;
@@ -142,11 +142,11 @@ module.exports = (Node) => {
         }
 
         async externalIn({result}) {
-            this.log('trace', {in: 'tcp.externalIn', result});
+            this.log('trace', {in: 'tcp.externalIn', args: {result}});
             try {
                 const globTraceId = uuid();
                 let {parsed} = await this.decode(result);
-                this.log('debug', {in: 'tcp.externalIn', parsed});
+                this.log('debug', {in: 'tcp.externalIn', args: {parsed}});
                 var {apiRequestId} = this.matchExternalInToTx(parsed);
                 return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId, apiRequestId}});
             } catch (error) {
@@ -155,14 +155,14 @@ module.exports = (Node) => {
         }
 
         async externalOut({result, error, meta}) {
-            this.log('trace', {in: 'tcp.externalOut', result, error, meta});
+            this.log('trace', {in: 'tcp.externalOut', args: {result, meta}, error});
             if (error) {
                 this.socket.end(() => this.socket.destroy());
                 throw error;
             }
             try {
                 let buffer = await this.encode(result);
-                this.log('debug', {in: 'tcp.externalOut', worldOutBuffer: buffer.toString('hex')});
+                this.log('debug', {in: 'tcp.externalOut', args: {worldOutBuffer: buffer.toString('hex')}});
                 return this.socket.write(buffer);
             } catch (error) {
                 this.socket.end(() => this.socket.destroy());

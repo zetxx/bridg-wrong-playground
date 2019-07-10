@@ -76,25 +76,25 @@ module.exports = (Node) => {
                     tags: ['api'],
                     handler: ({payload: {params, id = 0, method, meta: {globTraceId} = {}} = {}}, h) => {
                         const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
-                        this.log('error', {in: 'apiHttp.handler.request.response', pack: msg, error: 'MethodNotFound'});
+                        this.log('error', {in: 'apiHttp.handler.request.response', args: msg, error: 'MethodNotFound'});
                         return {id, error: serializeError(errors.methodNotFound(params))};
                     }
                 }
             });
             this.apiRoutes.map(({methodName, validate: {input, isNotification}, cors, ...route}) => {
-                this.log('debug', {in: 'apiHttp.route.register', methodName});
+                this.log('debug', {in: 'apiHttp.route.register', args: {methodName}});
                 return server.route(Object.assign({
                     method: 'POST',
                     path: `/JSONRPC/${methodName}`,
                     handler: async({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
                         const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
-                        this.log('trace', {in: 'apiHttp.handler.request', pack: msg});
+                        this.log('trace', {in: 'apiHttp.handler.request', args: msg});
                         try {
                             let response = {id, result: await this.apiRequestReceived(msg)};
-                            this.log('trace', {in: 'apiHttp.handler.response', pack: msg, response});
+                            this.log('trace', {in: 'apiHttp.handler.response', args: msg, response});
                             return response;
                         } catch (error) {
-                            this.log('error', {in: 'apiHttp.handler.response', pack: msg, error});
+                            this.log('error', {in: 'apiHttp.handler.response', args: msg, error});
                             return {id, error: serializeError(error)};
                         }
                     },

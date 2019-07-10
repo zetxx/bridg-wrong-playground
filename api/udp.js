@@ -33,7 +33,7 @@ module.exports = (Node) => {
                     try {
                         r = JSON.parse(s);
                     } catch (e) {
-                        this.log('error', {in: 'apiHttp.handler.response', pack: s, error: e});
+                        this.log('error', {in: 'apiHttp.handler.response', args: s, error: e});
                     }
                     var {params, method, id = false, meta: {globTraceId} = {}} = r;
                     const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
@@ -41,7 +41,7 @@ module.exports = (Node) => {
                         let {response = {id}} = await this.apiRequestReceived(msg);
                         return {id, result: response};
                     } catch (e) {
-                        this.log('error', {in: 'apiHttp.handler.response', pack: s, error: e});
+                        this.log('error', {in: 'apiHttp.handler.response', args: s, error: e});
                     }
                 });
                 server.bind(this.getStore(['config', 'api']));

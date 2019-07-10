@@ -5,7 +5,7 @@ module.exports = (Node) => {
         }
 
         getInternalCommunicationContext(meta) {
-            this.log('debug', {in: 'service.getInternalCommunicationContext', meta});
+            this.log('debug', {in: 'service.getInternalCommunicationContext', args: {meta}});
             return super.getInternalCommunicationContext(meta, {
                 lib: this.lib || {},
                 log: (...args) => this.log(...args)

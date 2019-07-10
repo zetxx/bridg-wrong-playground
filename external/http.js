@@ -30,7 +30,7 @@ module.exports = (Node) => {
         }
 
         async triggerEvent(event, message = {}) {
-            this.log('trace', {in: 'externalHttp.triggerEvent', event, message});
+            this.log('trace', {in: 'externalHttp.triggerEvent', args: {event, message}});
             try {
                 let fn = this.findExternalMethod({method: `event.${event}`});
                 let result = await fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
@@ -41,7 +41,7 @@ module.exports = (Node) => {
         }
 
         async externalOut({result, error, meta}) {
-            this.log('trace', {in: 'externalHttp.externalOut', message: result, error, meta});
+            this.log('trace', {in: 'externalHttp.externalOut', args: {meta, result}, error});
             let newMeta = {...meta};
             if (meta && meta.event) {
                 newMeta = {method: [meta.method, 'response'].join('.')};
