@@ -37,9 +37,6 @@ class WS extends Service {
             });
         });
         this.httpServer.listen(this.getStore(['config', 'ws', 'listenPort']));
-        this.lib = {
-            publish: (...args) => this.publish(...args)
-        };
         return super.start();
     }
 
@@ -54,17 +51,4 @@ class WS extends Service {
     }
 }
 
-module.exports = (name) => {
-    var service = new WS({name: name || 'ws'});
-
-    service.registerApiMethod({
-        method: 'log',
-        direction: 'in',
-        fn: function(msg) {
-            this.sharedContext.lib.publish(msg);
-            return false;
-        }
-    });
-    service.start()
-        .catch((e) => service.log('error', {in: 'ws.ready', error: e}));
-};
+module.exports = WS;

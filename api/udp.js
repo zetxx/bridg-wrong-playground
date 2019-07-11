@@ -1,5 +1,5 @@
 const dgram = require('dgram');
-const server = dgram.createSocket('udp4');
+const udp = dgram.createSocket('udp4');
 const pso = require('parse-strings-in-object');
 const uuid = require('uuid/v4');
 const rc = require('rc');
@@ -25,9 +25,10 @@ module.exports = (Node) => {
             );
             this.log('info', {in: 'apiUdp.start', message: `api-udp pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             await (new Promise((resolve, reject) => {
-                server.on('listening', resolve);
-                server.on('error', (error) => this.log('error', {in: 'apiUdp.start.error', text: 'udp server error', error}));
-                server.on('message', async(buf, rinfo) => {
+                this.apiUdpServer = udp;
+                this.apiUdpServer.on('listening', resolve);
+                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'apiUdp.start.error', text: 'udp server error', error}));
+                this.apiUdpServer.on('message', async(buf, rinfo) => {
                     this.log('trace', {in: 'apiUdp.request', args: {buffer: buf}});
                     var r = {};
                     var s = buf.toString('utf8');
@@ -45,8 +46,7 @@ module.exports = (Node) => {
                         this.log('error', {in: 'apiHttp.handler.response', args: s, error: e});
                     }
                 });
-                server.bind(this.getStore(['config', 'api']));
-                this.apiUdpServer = server;
+                this.apiUdpServer.bind(this.getStore(['config', 'api']));
             }));
             this.log('info', {in: 'apiUdp.start', message: `api-udp ready: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             return this.getStore(['config', 'api']);
@@ -57,7 +57,7 @@ module.exports = (Node) => {
             super.registerApiMethod({method: [method, direction].join('.'), fn});
         }
         async stop() {
-            this.apiUdpServer.close();
+            this.apiUdpServer && this.apiUdpServer.close(() => (this.apiUdpServer = null));
             return super.stop();
         }
     }

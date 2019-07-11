@@ -12,7 +12,8 @@ class Logger extends Service {
             pso(rc(this.getNodeName() || 'buzzer', {
                 log: {
                     level: 'trace',
-                    destinations: []
+                    destinations: [],
+                    stdout: true
                 }
             }).log)
         );
@@ -22,30 +23,36 @@ class Logger extends Service {
         });
     }
 
+    stop() {
+        super.stop();
+    }
+
     log(level, message) {
         var lvl = level || 'info';
+        let stdout = this.getStore(['config', 'log', 'stdout']);
         const toBeLogged = Object.assign({pid: `${this.name}.${this.domain}`, logLevel: lvl, domain: this.domain, timestamp: Date.now(), date: new Date()}, message);
-        this.logger[lvl](toBeLogged);
+        stdout && this.logger[lvl](toBeLogged);
         return toBeLogged;
+    }
+
+    async start() {
+        var service = this;
+        service.registerApiMethod({
+            method: 'log',
+            direction: 'in',
+            fn: function({level = 'info', fingerPrint, ...rest}) {
+                let destinations = this.getState(['config', 'log', 'destinations']);
+                destinations = ((destinations instanceof Array) && destinations) || (destinations && [destinations]);
+                try {
+                    let toBeLogged = service.log(level, {pid: `${fingerPrint.nodeName}`, ...rest});
+                    destinations.map((destination) => this.notification(`${destination}.log`, toBeLogged));
+                } catch (e) {}
+                return false;
+            }
+        });
+
+        return super.start();
     }
 }
 
-module.exports = (name) => {
-    var service = new Logger({name: name || 'logger'});
-
-    service.registerApiMethod({
-        method: 'log',
-        direction: 'in',
-        fn: function({level = 'info', fingerPrint, ...rest}) {
-            let destinations = this.getState(['config', 'log', 'destinations']);
-            destinations = ((destinations instanceof Array) && destinations) || (destinations && [destinations]);
-            try {
-                let toBeLogged = this.sharedContext.log(level, {pid: `${fingerPrint.nodeName}`, ...rest});
-                destinations.map((destination) => this.notification(`${destination}.log`, toBeLogged));
-            } catch (e) {}
-            return false;
-        }
-    });
-    service.start()
-        .catch((e) => service.log('error', {in: 'logger.ready', error: e}));
-};
+module.exports = Logger;

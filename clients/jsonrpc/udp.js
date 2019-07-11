@@ -15,6 +15,7 @@ const getCircularReplacer = () => {
 module.exports = ({hostname = 'localhost', port = 80}) => {
     var intCounter = 1;
     var client = dgram.createSocket('udp4');
+    var closed = false;
 
     return {
         send: ({method, params: {message, ...rest}, meta}) => (new Promise((resolve, reject) => {
@@ -30,10 +31,16 @@ module.exports = ({hostname = 'localhost', port = 80}) => {
             } catch (e) {
                 return reject(e);
             }
-            client.send(messageBuffer, 0, messageBuffer.length, port, hostname, function(err, bytes) {
-                err && console.error(err, {hostname, port, method, message, ...rest, meta});
-            });
+            try {
+                !closed && client.send(messageBuffer, 0, messageBuffer.length, port, hostname, function(err, bytes) {
+                    err && console.error(err, {hostname, port, method, message, ...rest, meta});
+                });
+            } catch (e) {
+                console.error(e);
+            }
         })),
-        destroy: () => client.close()
+        destroy: () => {
+            return !closed && client.close(() => (closed = true));
+        }
     };
 };

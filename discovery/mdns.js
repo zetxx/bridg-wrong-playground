@@ -54,23 +54,44 @@ module.exports = (Node) => {
         }
         async stop() {
             this.cleanup.map((fn) => fn());
-            Object.keys(this.internalRemoteServices).map((client) => setTimeout(this.internalRemoteServices[client].destroy, 3000));
+            this.cleanup = [];
+            Object.keys(this.internalRemoteServices).map((client) => this.internalRemoteServices[client].destroy && setTimeout(this.internalRemoteServices[client].destroy, 3000));
             return super.stop();
         }
 
-        resolve(serviceName, apiClient) {
+        async resolve(serviceName, apiClient) {
             var sn = this.resolveMap[serviceName] || serviceName;
             apiClient = apiClient || this.destinationClients[serviceName];
             if (!this.internalRemoteServices[sn]) {
-                return this.domain.reduce((p, domain) => {
-                    return p.then((resolved) => resolver(`${sn}.${domain}.local`)
-                        .then(({port, target}) => ({port, host: (this.nameResolve && sn) || target.replace('0.0.0.0', '127.0.0.1')}))
-                        .then(({host, port}) => (this.internalRemoteServices[sn] = jsonrpcClient[apiClient || 'http']({hostname: host, port})))
-                        .then(() => this.internalRemoteServices[sn].send)
-                    );
-                }, Promise.resolve({next: true}));
+                this.internalRemoteServices[sn] = {resolveResult: 'pending'};
+                return this.domain.reduce(async(p, domain) => {
+                    try {
+                        this.internalRemoteServices[sn].resolver = resolver(`${sn}.${domain}.local`);
+                        this.internalRemoteServices[sn].result = await this.internalRemoteServices[sn].resolver;
+                        this.internalRemoteServices[sn].resolveResult = 'ok';
+                        let port = this.internalRemoteServices[sn].result.port;
+                        let host = (this.nameResolve && sn) || this.internalRemoteServices[sn].result.target.replace('0.0.0.0', '127.0.0.1');
+                        this.internalRemoteServices[sn] = {...this.internalRemoteServices[sn], ...jsonrpcClient[apiClient || 'http']({hostname: host, port})};
+                        return this.internalRemoteServices[sn].send;
+                    } catch (error) {
+                        this.internalRemoteServices[sn].resolveResult = 'error';
+                        this.internalRemoteServices[sn].error = error;
+                        throw error;
+                    }
+                }, {});
+            } else if (this.internalRemoteServices[sn].resolveResult === 'pending') {
+                try {
+                    await this.internalRemoteServices[sn].resolver;
+                    return this.internalRemoteServices[sn].send;
+                } catch (error) {
+                    this.log('error', {in: 'discovery.resolve', args: {destination: sn, apiClient}, error});
+                }
+            } else if (this.internalRemoteServices[sn].resolveResult === 'error') {
+                this.log('error', {in: 'discovery.resolve', args: {destination: sn, apiClient}, error: this.internalRemoteServices[sn].error});
+                this.internalRemoteServices[sn] = undefined;
+            } else if (this.internalRemoteServices[sn].resolveResult === 'ok') {
+                return this.internalRemoteServices[sn].send;
             }
-            return Promise.resolve(this.internalRemoteServices[sn].send);
         }
 
         async remoteApiRequest({destination, message, meta}) {
