@@ -131,8 +131,8 @@ module.exports = (Node) => {
                 return false;
             });
             if (idxRspMatch >= 0) {
-                var apiRequestId = this.apiRequestsPool[idxRspMatch].meta.apiRequestId;
-                return {apiRequestId};
+                var {apiRequestId, globTraceId} = this.apiRequestsPool[idxRspMatch].meta;
+                return {apiRequestId, globTraceId};
             }
             return {};
         }
@@ -140,11 +140,10 @@ module.exports = (Node) => {
         async externalIn({result}) {
             this.log('trace', {in: 'tcp.externalIn', args: {result}});
             try {
-                const globTraceId = uuid();
                 let {parsed} = await this.decode(result);
                 this.log('debug', {in: 'tcp.externalIn', args: {parsed}});
-                var {apiRequestId} = this.matchExternalInToTx(parsed);
-                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId, apiRequestId}});
+                var {apiRequestId, globTraceId} = this.matchExternalInToTx(parsed);
+                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId: (globTraceId || {id: uuid(), count: 1}), apiRequestId}});
             } catch (error) {
                 this.log('error', {in: 'tcp.externalIn', error});
             }

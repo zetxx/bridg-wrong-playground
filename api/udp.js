@@ -38,7 +38,7 @@ module.exports = (Node) => {
                         this.log('error', {in: 'apiHttp.handler.response', args: s, error: e});
                     }
                     var {params, method, id = false, meta: {globTraceId} = {}} = r;
-                    const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
+                    const msg = {message: params, meta: {method, globTraceId: (globTraceId || {id: uuid(), count: 1}), isNotification: (!id)}};
                     try {
                         let {response = {id}} = await this.apiRequestReceived(msg);
                         return {id, result: response};

@@ -75,7 +75,7 @@ module.exports = (Node) => {
                 options: {
                     tags: ['api'],
                     handler: ({payload: {params, id = 0, method, meta: {globTraceId} = {}} = {}}, h) => {
-                        const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
+                        const msg = {message: params, meta: {method, globTraceId: (globTraceId || {id: uuid(), count: 1}), isNotification: (!id)}};
                         this.log('error', {in: 'api.http.handler.request.response', args: msg, error: 'MethodNotFound'});
                         return {id, error: serializeError(errors.methodNotFound(params))};
                     }
@@ -87,7 +87,7 @@ module.exports = (Node) => {
                     method: 'POST',
                     path: `/JSONRPC/${methodName}`,
                     handler: async({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
-                        const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
+                        const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || {id: uuid(), count: 1}), isNotification: (!id)}};
                         this.log('trace', {in: 'api.http.handler.request', args: msg});
                         try {
                             let response = {id, result: await this.apiRequestReceived(msg)};
