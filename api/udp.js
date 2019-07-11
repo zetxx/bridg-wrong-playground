@@ -28,6 +28,7 @@ module.exports = (Node) => {
                 server.on('listening', resolve);
                 server.on('error', (error) => this.log('error', {in: 'apiUdp.start.error', text: 'udp server error', error}));
                 server.on('message', async(buf, rinfo) => {
+                    this.log('trace', {in: 'apiUdp.request', args: {buffer: buf}});
                     var r = {};
                     var s = buf.toString('utf8');
                     try {
