@@ -41,7 +41,7 @@ module.exports = (Node) => {
         }
 
         async stop() {
-            this.pool.end(() => this.log('info', {in: 'postgre.stop', text: 'pool ended'}));
+            this.pool.end(() => this.log('info', {in: 'postgre.stop', description: 'pool ended'}));
             return super.stop();
         }
 

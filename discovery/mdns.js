@@ -41,7 +41,7 @@ module.exports = (Node) => {
 
         start() {
             return super.start()
-                .then((httpApi) => Promise.resolve().then(() => this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: pending`})).then(() => httpApi))
+                .then((httpApi) => Promise.resolve().then(() => this.log('info', {in: 'discovery.start', description: `discovery[${this.name}]: pending`})).then(() => httpApi))
                 .then((httpApi) => new Promise((resolve, reject) => {
                     this.domain.map((domain) => {
                         let disc = discovery({domain: `${domain}.local`, ...this.discoveryOptions});
@@ -50,7 +50,7 @@ module.exports = (Node) => {
                     });
                     resolve();
                 }))
-                .then(() => this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: ready`}));
+                .then(() => this.log('info', {in: 'discovery.start', description: `discovery[${this.name}]: ready`}));
         }
         async stop() {
             this.cleanup.map((fn) => fn());

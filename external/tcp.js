@@ -32,36 +32,33 @@ module.exports = (Node) => {
             this.socket = undefined;
             this.lib = {...this.lib, connect: () => this.connect()};
             this.lib = {...this.lib, dissconnect: () => this.dissconnect()};
-            return super.start()
-                .then(() => (
-                    this.setStore(
-                        ['config'],
-                        {
-                            tcp: pso(rc(this.getNodeName() || 'buzzer', {
-                                tcp: {
-                                    host: 'localhost', // to wich host to connect (where switch is listening)
-                                    port: 5000, // to wich port to connect  (where switch is listening)
-                                    responseTimeout: 10000 // throw timeout error after period of time (ms)
-                                }
-                            }).tcp)
-                        }
-                    )
-                ))
-                .then(() => setTimeout(() => !this.connected && this.triggerEvent('externalDisconnected'), 5000)); // if only network gets restarted, send dissconect event if it is not connected
+            let s = super.start();
+            this.setStore(
+                ['config', 'tcp'],
+                pso(rc(this.getNodeName() || 'buzzer', {
+                    tcp: {
+                        host: 'localhost', // to wich host to connect (where switch is listening)
+                        port: 5000, // to wich port to connect  (where switch is listening)
+                        responseTimeout: 10000 // throw timeout error after period of time (ms)
+                    }
+                }).tcp)
+            );
+            setTimeout(() => !this.connected && this.triggerEvent('externalDisconnected'), 5000); // if only network gets restarted, send dissconect event if it is not connected
+            return s;
         }
         connect() {
-            this.log('debug', {in: 'tcp.connect', text: 'connection initialisation'});
+            this.log('debug', {in: 'tcp.connect', description: 'connection initialisation'});
             return new Promise((resolve, reject) => {
                 if (!this.connected) {
                     this.socket = net.createConnection({port: this.getStore(['config', 'tcp', 'port']), host: this.getStore(['config', 'tcp', 'host'])});
                     this.socket.on('data', (data) => this.dataReceived(data));
                     this.socket.on('connect', () => {
-                        this.log('debug', {in: 'tcp.connect', text: 'connected'});
+                        this.log('debug', {in: 'tcp.connect', description: 'connected'});
                         this.connected = true;
                         this.socket.on('error', (e) => {
                             this.log('error', {in: 'tcp.connect.error', error: e});
                         });
-                        this.log('info', {in: 'tcp.connect', text: 'network connected'});
+                        this.log('info', {in: 'tcp.connect', description: 'network connected'});
                         resolve();
                     });
                     this.socket.on('error', (e) => {
@@ -70,7 +67,7 @@ module.exports = (Node) => {
                     this.socket.on('close', (e) => {
                         this.connected = false;
                         this.socket = null;
-                        this.log('warn', {in: 'tcp.connect', text: 'connectionClosed'});
+                        this.log('warn', {in: 'tcp.connect', description: 'connectionClosed'});
                         this.triggerEvent('externalDisconnected');
                     });
                 }
@@ -78,7 +75,7 @@ module.exports = (Node) => {
         }
 
         dissconnect() {
-            this.log('debug', {in: 'dissconnect', text: 'connection initialisation'});
+            this.log('debug', {in: 'dissconnect', description: 'connection initialisation'});
             return new Promise((resolve, reject) => {
                 return this.connected && this.socket.end();
             });

@@ -32,9 +32,9 @@ module.exports = (Node) => {
         }
 
         async start() {
-            this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: pending`});
+            this.log('info', {in: 'discovery.start', description: `discovery[${this.name}]: pending`});
             let httpApi = await super.start();
-            this.log('info', {in: 'discovery.start', text: `discovery[${this.name}]: ready`});
+            this.log('info', {in: 'discovery.start', description: `discovery[${this.name}]: ready`});
             return httpApi;
         }
 

@@ -27,7 +27,7 @@ module.exports = (Node) => {
             await (new Promise((resolve, reject) => {
                 this.apiUdpServer = udp;
                 this.apiUdpServer.on('listening', resolve);
-                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'apiUdp.start.error', text: 'udp server error', error}));
+                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'apiUdp.start.error', description: 'udp server error', error}));
                 this.apiUdpServer.on('message', async(buf, rinfo) => {
                     this.log('trace', {in: 'apiUdp.request', args: {buffer: buf}});
                     var r = {};
