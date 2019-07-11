@@ -86,7 +86,7 @@ module.exports = (Node) => {
         }
 
         async triggerEvent(event, message = {}) {
-            this.log('debug', {in: 'tcp.triggerEvent', args: {event, message}});
+            this.log('debug', {in: 'tcp.triggerEvent', description: event, args: {event, message}});
             try {
                 let fn = this.findExternalMethod({method: `event.${event}`});
                 return fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});

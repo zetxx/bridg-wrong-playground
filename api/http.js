@@ -30,7 +30,7 @@ const validate = (log, {params = Joi.object().required(), isNotification = 0, me
         payload: Joi.object().keys(payload).required(),
         failAction: (request, h, err) => {
             if (err) {
-                log('error', {in: 'apiHttp.handler.error', error: err, payload: request.payload});
+                log('error', {in: 'api.http.handler.error', error: err, payload: request.payload});
                 throw Boom.badRequest('ValidationError');
             }
             throw err;
@@ -57,7 +57,7 @@ module.exports = (Node) => {
                     }
                 }).api)
             );
-            this.log('info', {in: 'apiHttp.start', message: `pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});
+            this.log('info', {in: 'api.http.start', description: `pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             const server = Hapi.server(this.getStore(['config', 'api']));
             server.route({
                 method: 'GET',
@@ -76,25 +76,25 @@ module.exports = (Node) => {
                     tags: ['api'],
                     handler: ({payload: {params, id = 0, method, meta: {globTraceId} = {}} = {}}, h) => {
                         const msg = {message: params, meta: {method, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
-                        this.log('error', {in: 'apiHttp.handler.request.response', args: msg, error: 'MethodNotFound'});
+                        this.log('error', {in: 'api.http.handler.request.response', args: msg, error: 'MethodNotFound'});
                         return {id, error: serializeError(errors.methodNotFound(params))};
                     }
                 }
             });
             this.apiRoutes.map(({methodName, validate: {input, isNotification}, cors, ...route}) => {
-                this.log('debug', {in: 'apiHttp.route.register', args: {methodName}});
+                this.log('debug', {in: 'api.http.route.register', description: `registering method ${methodName}`});
                 return server.route(Object.assign({
                     method: 'POST',
                     path: `/JSONRPC/${methodName}`,
                     handler: async({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
                         const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || uuid()), isNotification: (!id)}};
-                        this.log('trace', {in: 'apiHttp.handler.request', args: msg});
+                        this.log('trace', {in: 'api.http.handler.request', args: msg});
                         try {
                             let response = {id, result: await this.apiRequestReceived(msg)};
-                            this.log('trace', {in: 'apiHttp.handler.response', args: msg, response});
+                            this.log('trace', {in: 'api.http.handler.response', args: msg, response});
                             return response;
                         } catch (error) {
-                            this.log('error', {in: 'apiHttp.handler.response', args: msg, error});
+                            this.log('error', {in: 'api.http.handler.response', args: msg, error});
                             return {id, error: serializeError(error)};
                         }
                     },
@@ -113,9 +113,8 @@ module.exports = (Node) => {
             }
             this.httpApiServer = server;
             this.log('info', {
-                in: 'apiHttp.start',
-                swaggerUrl: `http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`,
-                message: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))}`
+                in: 'api.http.start',
+                description: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))} swagger: http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`
             });
             return this.getStore(['config', 'api']);
         }
@@ -138,7 +137,7 @@ module.exports = (Node) => {
             list.map((item) => this.registerExternalMethod(item));
         }
         async stop() {
-            this.log('info', {in: 'apiHttp.stop', message: `stoping: ${JSON.stringify(this.getStore(['config', 'api']))}`});
+            this.log('info', {in: 'api.http.stop', description: `stoping: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             await this.httpApiServer.stop({timeout: 2000});
             return super.stop();
         }

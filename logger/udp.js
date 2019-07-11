@@ -13,7 +13,7 @@ module.exports = (Node) => {
             let s = await super.start();
             this.queueCleanInterval = setInterval(() => this.cleanupLogQueue(), 1000);
             await this.initLogger();
-            this.log('info', {in: 'logger.start', message: 'ready'});
+            this.log('info', {in: 'logger.start', description: 'ready'});
             return s;
         }
 

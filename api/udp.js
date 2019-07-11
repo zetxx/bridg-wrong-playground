@@ -23,13 +23,13 @@ module.exports = (Node) => {
                     }
                 }).api)
             );
-            this.log('info', {in: 'apiUdp.start', message: `api-udp pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});
+            this.log('info', {in: 'api.udp.start', description: `api-udp pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             await (new Promise((resolve, reject) => {
                 this.apiUdpServer = udp;
                 this.apiUdpServer.on('listening', resolve);
-                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'apiUdp.start.error', description: 'udp server error', error}));
+                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'api.udp.start.error', description: 'udp server error', error}));
                 this.apiUdpServer.on('message', async(buf, rinfo) => {
-                    this.log('trace', {in: 'apiUdp.request', args: {buffer: buf}});
+                    this.log('trace', {in: 'api.udp.request', args: {buffer: buf}});
                     var r = {};
                     var s = buf.toString('utf8');
                     try {
@@ -48,7 +48,7 @@ module.exports = (Node) => {
                 });
                 this.apiUdpServer.bind(this.getStore(['config', 'api']));
             }));
-            this.log('info', {in: 'apiUdp.start', message: `api-udp ready: ${JSON.stringify(this.getStore(['config', 'api']))}`});
+            this.log('info', {in: 'api.udp.start', description: `api-udp ready: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             return this.getStore(['config', 'api']);
         }
 

@@ -62,12 +62,14 @@ module.exports = (Node) => {
         async resolve(serviceName, apiClient) {
             var sn = this.resolveMap[serviceName] || serviceName;
             apiClient = apiClient || this.destinationClients[serviceName];
+            this.log('info', {in: 'discovery.resolve', description: `try to resolve: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
             if (!this.internalRemoteServices[sn]) {
                 this.internalRemoteServices[sn] = {resolveResult: 'pending'};
                 return this.domain.reduce(async(p, domain) => {
                     try {
                         this.internalRemoteServices[sn].resolver = resolver(`${sn}.${domain}.local`);
                         this.internalRemoteServices[sn].result = await this.internalRemoteServices[sn].resolver;
+                        this.log('info', {in: 'discovery.resolve', description: `resolved: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
                         this.internalRemoteServices[sn].resolveResult = 'ok';
                         let port = this.internalRemoteServices[sn].result.port;
                         let host = (this.nameResolve && sn) || this.internalRemoteServices[sn].result.target.replace('0.0.0.0', '127.0.0.1');
@@ -76,6 +78,7 @@ module.exports = (Node) => {
                     } catch (error) {
                         this.internalRemoteServices[sn].resolveResult = 'error';
                         this.internalRemoteServices[sn].error = error;
+                        this.log('error', {in: 'discovery.resolve', description: `cannot resolve: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`, error});
                         throw error;
                     }
                 }, {});
@@ -90,13 +93,14 @@ module.exports = (Node) => {
                 this.log('error', {in: 'discovery.resolve', args: {destination: sn, apiClient}, error: this.internalRemoteServices[sn].error});
                 this.internalRemoteServices[sn] = undefined;
             } else if (this.internalRemoteServices[sn].resolveResult === 'ok') {
+                this.log('info', {in: 'discovery.resolve', description: `resolved: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
                 return this.internalRemoteServices[sn].send;
             }
         }
 
         async remoteApiRequest({destination, message, meta}) {
             var [nodeName, ...rest] = destination.split('.');
-            this.log('trace', {in: 'discovery.remoteApiRequest', args: {destination, message, meta}});
+            this.log('trace', {in: 'discovery.remoteApiRequest', description: `try to call microservice: ${destination}`, args: {destination, message, meta}});
             let request = await this.resolve(nodeName);
             return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})});
         }

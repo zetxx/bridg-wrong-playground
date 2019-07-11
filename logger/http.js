@@ -9,14 +9,14 @@ module.exports = (Node) => {
         start() {
             return super.start()
                 .then(() => this.initLogger())
-                .then(() => this.log('info', {in: 'logger.start', message: 'ready'}));
+                .then(() => this.log('info', {in: 'logger.start', description: 'ready'}));
         }
 
         async initLogger() {
             try {
                 this.logWire = await this.resolve('logger');
             } catch (error) {
-                this.log('error', {in: 'logger.initLogger', message: 'ready'}, {error});
+                this.log('error', {in: 'logger.initLogger', description: 'ready'}, {error});
                 this.initLogger();
             }
         }
