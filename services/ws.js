@@ -25,15 +25,25 @@ class WS extends Service {
         const wss = new WebSocket.Server({server: this.httpServer});
         var idx = 0;
         wss.on('connection', (ws) => {
-            const index = ++idx;
-            this.clients.push({socIdx: index, ws});
-            ws.on('close', (message) => {
-                this.clients = this.clients.reduce((a, {socIdx, ws}) => {
-                    if (socIdx !== index) {
-                        a.push({socIdx, ws});
+            var channelReportTimeout = setTimeout(() => ws.close(), 5000);
+
+            ws.once('message', (msg) => {
+                try {
+                    let m = JSON.parse(msg);
+                    if (m.channel) {
+                        clearTimeout(channelReportTimeout);
+                        const index = ++idx;
+                        this.clients.push({socIdx: index, ws, channel: m.channel});
+                        ws.on('close', (message) => {
+                            this.clients = this.clients.reduce((a, {socIdx, ws}) => {
+                                if (socIdx !== index) {
+                                    a.push({socIdx, ws});
+                                }
+                                return a;
+                            }, []);
+                        });
                     }
-                    return a;
-                }, []);
+                } catch (e) {}
             });
         });
         this.httpServer.listen(this.getStore(['config', 'ws', 'listenPort']));
@@ -46,8 +56,8 @@ class WS extends Service {
         return super.stop();
     }
 
-    publish(msg) {
-        this.clients.map(({ws}) => ws.send(JSON.stringify(msg)));
+    publish(toChanell = 0, msg) {
+        this.clients.map(({ws, channel}) => toChanell === channel && ws.send(JSON.stringify(msg)));
     }
 }
 

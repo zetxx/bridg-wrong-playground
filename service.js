@@ -24,5 +24,11 @@ module.exports = (Node) => {
                 log: (...args) => this.log(...args)
             });
         }
+        request(destination, message) {
+            return this.getInternalCommunicationContext({}).request(destination, message);
+        }
+        notification(destination, message) {
+            return this.getInternalCommunicationContext({}).notification(destination, message);
+        }
     };
 };
