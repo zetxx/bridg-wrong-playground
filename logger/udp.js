@@ -1,4 +1,4 @@
-const serializeError = require('serialize-error');
+const {serializeError} = require('serialize-error');
 
 module.exports = (Node) => {
     return class Logger extends Node {

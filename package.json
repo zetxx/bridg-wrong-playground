@@ -2,12 +2,11 @@
     "name": "bridg-wrong-playground",
     "description": "",
     "version": "2.6.9",
-    "devDependencies": {
+    "peerDependencies": {
         "rc": "1.2.8",
         "ws": "7.1.2",
         "why-is-node-running": "2.1.0",
         "parse-strings-in-object": "1.2.0",
-        "bridg-wrong": "3.1.1",
         "@hapi/hapi": "18.4.0",
         "immutable": "4.0.0-rc.12",
         "pino": "5.13.4",
@@ -15,7 +14,7 @@
         "dns-discovery": "6.2.3",
         "@hapi/inert": "5.2.2",
         "@hapi/vision": "5.5.4",
-        "@hapi/joi": "16.1.7",
+        "@hapi/joi": "15.1.1",
         "hapi-swagger": "10.1.2",
         "@hapi/boom": "8.0.1",
         "uuid": "3.3.3",
@@ -23,6 +22,9 @@
         "pg": "7.12.1",
         "request-promise-native": "1.0.7",
         "serialize-error": "5.0.0"
+    },
+    "devDependencies": {
+        "bridg-wrong": "3.1.1"
     },
     "author": "zetxx",
     "license": "MIT"

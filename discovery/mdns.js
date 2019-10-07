@@ -1,7 +1,6 @@
-const rc = require('rc');
 const discovery = require('dns-discovery');
 const resolver = require('mdns-resolver').resolveSrv;
-const pso = require('parse-strings-in-object');
+const {getConfig} = require('../utils');
 const jsonrpcClient = {
     http: require('../clients/jsonrpc/http'),
     udp: require('../clients/jsonrpc/udp')
@@ -11,24 +10,21 @@ module.exports = (Node) => {
     class ApiHttpDiscovery extends Node {
         constructor({name = 'Node'} = {}) {
             super();
-            var rcConf = pso(rc(name, {
-                discovery: {
-                    domain: 'testdomain',
-                    nameResolve: false,
-                    loopback: false,
-                    nodeName: name,
-                    resolveMap: {
-                        logger: 'logger'
-                    },
-                    destinationClients: {}
-                }
-            }).discovery);
-            var {domain, nameResolve, nodeName, resolveMap, destinationClients, ...discoveryOptions} = rcConf;
+            var rcConf = getConfig(name, ['resolve'], {
+                type: 'mdns',
+                domain: 'testdomain',
+                loopback: false,
+                nodeName: name,
+                map: {
+                    logger: 'logger'
+                },
+                destinationClients: {}
+            });
+            var {domain, nodeName, map, destinationClients, ...discoveryOptions} = rcConf;
             this.name = nodeName;
             this.destinationClients = destinationClients;
-            this.resolveMap = resolveMap;
+            this.resolveMap = map;
             this.domain = domain.split(',');
-            this.nameResolve = nameResolve;
             this.discoveryOptions = discoveryOptions || {};
             this.cleanup = [];
             this.discoveryDomainCache = {};
@@ -72,7 +68,7 @@ module.exports = (Node) => {
                         this.log('info', {in: 'discovery.resolve', description: `resolved: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
                         this.internalRemoteServices[sn].resolveResult = 'ok';
                         let port = this.internalRemoteServices[sn].result.port;
-                        let host = (this.nameResolve && sn) || this.internalRemoteServices[sn].result.target.replace('0.0.0.0', '127.0.0.1');
+                        let host = this.internalRemoteServices[sn].result.target.replace('0.0.0.0', '127.0.0.1');
                         this.internalRemoteServices[sn] = {...this.internalRemoteServices[sn], ...jsonrpcClient[apiClient || 'http']({hostname: host, port})};
                         return this.internalRemoteServices[sn].send;
                     } catch (error) {

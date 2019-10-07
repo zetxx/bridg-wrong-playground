@@ -1,8 +1,7 @@
 const dgram = require('dgram');
 const udp = dgram.createSocket('udp4');
-const pso = require('parse-strings-in-object');
 const uuid = require('uuid/v4');
-const rc = require('rc');
+const {getConfig} = require('../utils');
 
 module.exports = (Node) => {
     class ApiUdp extends Node {
@@ -16,12 +15,11 @@ module.exports = (Node) => {
             await super.start();
             this.setStore(
                 ['config', 'api'],
-                pso(rc(this.getNodeName() || 'buzzer', {
-                    api: {
-                        port: 8080,
-                        address: '0.0.0.0'
-                    }
-                }).api)
+                getConfig(this.getNodeName() || 'buzzer', ['api'], {
+                    type: 'udp',
+                    port: 8080,
+                    address: '0.0.0.0'
+                })
             );
             this.log('info', {in: 'api.udp.start', description: `api-udp pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             await (new Promise((resolve, reject) => {

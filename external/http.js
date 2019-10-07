@@ -1,7 +1,6 @@
-const pso = require('parse-strings-in-object');
-const rc = require('rc');
+const {getConfig} = require('../utils');
 const request = require('request-promise-native');
-const codec = () => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
+const codec = (config) => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
 
 module.exports = (Node) => {
     class ExternalHttp extends Node {
@@ -10,21 +9,18 @@ module.exports = (Node) => {
             this.codec = codec;
         }
         start() {
-            var codecCofnig = rc(this.getNodeName() || 'buzzer', {
-                codec: {}
-            }).codec;
-            var c = (this.codec && this.codec(codecCofnig)) || codec({});
+            var codecCofnig = getConfig(this.getNodeName() || 'buzzer', ['codec'], {});
+            var c = (this.codec && this.codec(codecCofnig)) || codec(codecCofnig);
             this.encode = c.encode.bind(c);
             this.decode = c.decode.bind(c);
             return super.start()
                 .then(() => (
                     this.setStore(
-                        ['config', 'http'],
-                        pso(rc(this.getNodeName() || 'buzzer', {
-                            http: {
-                                timeout: 10000
-                            }
-                        }).http)
+                        ['config', 'external'],
+                        getConfig(this.getNodeName() || 'buzzer', ['external'], {
+                            type: 'http',
+                            timeout: 10000
+                        })
                     )
                 ));
         }
@@ -46,7 +42,7 @@ module.exports = (Node) => {
             if (meta && meta.event) {
                 newMeta = {method: [meta.method, 'response'].join('.')};
             }
-            let timeout = this.getStore(['config', 'http', 'timeout']);
+            let timeout = this.getStore(['config', 'external', 'timeout']);
             try {
                 let requestResult = await request({timeout, ...result});
                 return this.externalIn({result: requestResult, meta: newMeta});

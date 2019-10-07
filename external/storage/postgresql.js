@@ -1,5 +1,4 @@
-const pso = require('parse-strings-in-object');
-const rc = require('rc');
+const {getConfig} = require('../../utils');
 const {Pool} = require('pg');
 
 // !!!! WARNING, SQL INJECTIONS POSSIBLE
@@ -9,22 +8,20 @@ module.exports = (Node) => {
         constructor(args) {
             super(args);
             this.setStore(
-                ['config', 'storage'],
-                pso(rc(this.getNodeName() || 'buzzer', {
-                    storage: {
-                        level: 'trace',
-                        host: '0.0.0.0',
-                        max: 6,
-                        idleTimeoutMillis: 30000,
-                        connectionTimeoutMillis: 2000,
-                        user: 'some.user',
-                        password: 'some.password',
-                        database: 'some.database',
-                        schema: 'some.schema'
-                    }
-                }).storage)
+                ['config', 'external', 'storage'],
+                getConfig(this.getNodeName() || 'buzzer', ['external', 'storage'], {
+                    level: 'trace',
+                    host: '0.0.0.0',
+                    max: 6,
+                    idleTimeoutMillis: 30000,
+                    connectionTimeoutMillis: 2000,
+                    user: 'some.user',
+                    password: 'some.password',
+                    database: 'some.database',
+                    schema: 'some.schema'
+                })
             );
-            this.pool = new Pool(this.getStore(['config', 'storage']));
+            this.pool = new Pool(this.getStore(['config', 'external', 'storage']));
         }
 
         async start() {
@@ -46,7 +43,7 @@ module.exports = (Node) => {
         }
 
         async externalOut({result: {table, insert, select, fn}, error, meta}) {
-            let {schema, database} = this.getStore(['config', 'storage']);
+            let {schema, database} = this.getStore(['config', 'external', 'storage']);
             this.log('trace', {in: 'postgre.externalOut', args: {message: {table, insert, select}, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}}});
             var query;
             let fullObjectName = [database, schema, table || (fn && fn.name)].join('.');

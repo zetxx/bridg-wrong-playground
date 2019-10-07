@@ -5,9 +5,8 @@ const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
 const uuid = require('uuid/v4');
 const HapiSwagger = require('hapi-swagger');
-const pso = require('parse-strings-in-object');
-const rc = require('rc');
-const serializeError = require('serialize-error');
+const {getConfig} = require('../utils');
+const {serializeError} = require('serialize-error');
 const errors = require('bridg-wrong/lib/errors');
 
 const swaggerOptions = {
@@ -50,12 +49,10 @@ module.exports = (Node) => {
             await super.start();
             this.setStore(
                 ['config', 'api'],
-                pso(rc(this.getNodeName() || 'buzzer', {
-                    api: {
-                        port: 8080,
-                        address: '0.0.0.0'
-                    }
-                }).api)
+                getConfig(this.getNodeName() || 'buzzer', ['api'], {
+                    port: 8080,
+                    address: '0.0.0.0'
+                })
             );
             this.log('info', {in: 'api.http.start', description: `pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             const server = Hapi.server(this.getStore(['config', 'api']));

@@ -1,8 +1,7 @@
 const net = require('net');
-const pso = require('parse-strings-in-object');
-const rc = require('rc');
+const {getConfig} = require('../utils');
 const uuid = require('uuid/v4');
-const codec = () => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
+const codec = (config) => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
 
 const rqMsgLen = (msg) => {
     let len = parseInt(msg.slice(0, 2).toString('hex'), 16);
@@ -19,12 +18,10 @@ module.exports = (Node) => {
             this.codec = codec;
         }
         start() {
-            var codecCofnig = rc(this.getNodeName() || 'buzzer', {
-                codec: {
-                    macCheck: false
-                }
-            }).codec;
-            var c = (this.codec && this.codec(codecCofnig)) || codec({});
+            var codecCofnig = getConfig(this.getNodeName() || 'buzzer', ['codec'], {
+                macCheck: false
+            });
+            var c = (this.codec && this.codec(codecCofnig)) || codec(codecCofnig);
             this.encode = c.encode.bind(c);
             this.decode = c.decode.bind(c);
             this.receivedBuffer = Buffer.from('');
@@ -34,14 +31,13 @@ module.exports = (Node) => {
             this.lib = {...this.lib, dissconnect: () => this.dissconnect()};
             let s = super.start();
             this.setStore(
-                ['config', 'tcp'],
-                pso(rc(this.getNodeName() || 'buzzer', {
-                    tcp: {
-                        host: 'localhost', // to wich host to connect (where switch is listening)
-                        port: 5000, // to wich port to connect  (where switch is listening)
-                        responseTimeout: 10000 // throw timeout error after period of time (ms)
-                    }
-                }).tcp)
+                ['config', 'external'],
+                getConfig(this.getNodeName() || 'buzzer', ['external'], {
+                    type: 'tcp',
+                    host: 'localhost', // to wich host to connect (where switch is listening)
+                    port: 5000, // to wich port to connect  (where switch is listening)
+                    responseTimeout: 10000 // throw timeout error after period of time (ms)
+                })
             );
             setTimeout(() => !this.connected && this.triggerEvent('externalDisconnected'), 5000); // if only network gets restarted, send dissconect event if it is not connected
             return s;

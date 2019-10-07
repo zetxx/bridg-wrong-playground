@@ -1,5 +1,4 @@
 const MainNode = require('bridg-wrong');
-// setTimeout(require('why-is-node-running'), 10000);
 
 const execOrder = [
     'state', 'api', 'discovery', 'logger', 'service', 'external'
