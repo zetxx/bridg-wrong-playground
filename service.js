@@ -1,11 +1,30 @@
 const uuid = require('uuid/v4');
+const {Map, fromJS} = require('immutable');
 
 module.exports = (Node) => {
-    return class Service extends Node {
-        getFingerprint() {
-            return Object.assign({}, (super.getFingerprint && super.getFingerprint()) || {}, {nodeName: this.name, domain: this.domain});
+    var store = Map();
+    var processUID = [uuid(), Date.now()].join(':');
+
+    class State extends Node {
+        setStore(keyPath, collections) {
+            store = store.setIn(keyPath, fromJS(collections));
         }
 
+        getStore(searchKeyPath, notSetValue) {
+            var res = store.getIn(searchKeyPath, notSetValue);
+            return (res && res.toJS && res.toJS()) || res;
+        }
+    }
+    return class Service extends State {
+        getFingerprint() {
+            return Object.assign(
+                {},
+                (super.getFingerprint && super.getFingerprint()) || {},
+                {nodeName: this.name, domain: this.domain, procesUid: processUID}
+            );
+        }
+
+        // construct global trace id
         getGlobTraceId(meta) {
             var globTraceId = {};
             if (!meta.globTraceId) {
@@ -17,6 +36,7 @@ module.exports = (Node) => {
             return super.getGlobTraceId({globTraceId});
         }
 
+        // expose getInternalCommunicationContext because it is needet for request and notif.
         getInternalCommunicationContext(meta) {
             this.log('debug', {in: 'service.getInternalCommunicationContext', args: {meta}});
             return super.getInternalCommunicationContext(meta, {
@@ -24,9 +44,11 @@ module.exports = (Node) => {
                 log: (...args) => this.log(...args)
             });
         }
+        // expose request to main api
         request(destination, message) {
             return this.getInternalCommunicationContext({}).request(destination, message);
         }
+        // expose notification to main api
         notification(destination, message) {
             return this.getInternalCommunicationContext({}).notification(destination, message);
         }

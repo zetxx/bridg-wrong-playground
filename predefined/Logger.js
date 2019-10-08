@@ -11,6 +11,7 @@ class Logger extends Service {
             ['config', 'log'],
             getConfig(this.getNodeName() || 'buzzer', ['log'], {
                 level: 'trace',
+                logOwn: false,
                 destinations: [],
                 stdout: true
             })
@@ -25,7 +26,12 @@ class Logger extends Service {
         super.stop();
     }
 
-    log(level, message) {
+    log(level, {logExternal, ...message}) {
+        let logOwn = this.getStore(['config', 'log', 'logOwn']);
+        // log only if logExternal is true
+        if (!logOwn && !logExternal) {
+            return null;
+        }
         var lvl = level || 'info';
         let stdout = this.getStore(['config', 'log', 'stdout']);
         if (message.error) {
@@ -37,15 +43,17 @@ class Logger extends Service {
     }
 
     async start() {
-        var service = this;
-        service.registerApiMethod({
+        var log = this.log.bind(this);
+
+        this.registerApiMethod({
             method: 'log',
             direction: 'in',
             fn: function({level = 'info', fingerPrint, ...rest}) {
                 let destinations = this.getState(['config', 'log', 'destinations']);
                 destinations = ((destinations instanceof Array) && destinations) || (destinations && [destinations]);
                 try {
-                    let toBeLogged = service.log(level, {pid: `${fingerPrint.nodeName}`, ...rest});
+                    // set logExternal to true so everything that comes from wire will be logged
+                    let toBeLogged = log(level, {pid: `${fingerPrint.nodeName}`, logExternal: true, ...rest});
                     destinations.map((destination) => this.notification(`${destination}.log`, toBeLogged));
                 } catch (e) {}
                 return false;

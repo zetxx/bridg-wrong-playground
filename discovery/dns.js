@@ -31,13 +31,13 @@ module.exports = (Node) => {
 
         async start() {
             this.log('info', {in: 'discovery.start', description: `discovery[${this.name}]: pending`});
-            let httpApi = await super.start();
+            let prev = await super.start();
             this.log('info', {in: 'discovery.start', description: `discovery[${this.name}]: ready`});
-            return httpApi;
+            return prev;
         }
 
         async stop() {
-            Object.keys(this.internalRemoteServices).map((client) => setTimeout(this.internalRemoteServices[client].destroy, 3000));
+            Object.keys(this.internalRemoteServices).map((client) => setTimeout(this.internalRemoteServices[client].destroy, 1000));
             return super.stop();
         }
 
@@ -56,7 +56,7 @@ module.exports = (Node) => {
             var [nodeName, ...rest] = destination.split('.');
             this.log('trace', {in: 'discovery.remoteApiRequest', args: {destination, message, meta}});
             let request = await this.resolve(nodeName);
-            return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})})
+            return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})});
         }
     }
     return ApiHttpDiscovery;

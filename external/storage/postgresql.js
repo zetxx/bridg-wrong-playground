@@ -8,8 +8,8 @@ module.exports = (Node) => {
         constructor(args) {
             super(args);
             this.setStore(
-                ['config', 'external', 'storage'],
-                getConfig(this.getNodeName() || 'buzzer', ['external', 'storage'], {
+                ['config', 'external'],
+                getConfig(this.getNodeName() || 'buzzer', ['external'], {
                     level: 'trace',
                     host: '0.0.0.0',
                     max: 6,
@@ -21,7 +21,7 @@ module.exports = (Node) => {
                     schema: 'some.schema'
                 })
             );
-            this.pool = new Pool(this.getStore(['config', 'external', 'storage']));
+            this.pool = new Pool(this.getStore(['config', 'external']));
         }
 
         async start() {
@@ -43,7 +43,7 @@ module.exports = (Node) => {
         }
 
         async externalOut({result: {table, insert, select, fn}, error, meta}) {
-            let {schema, database} = this.getStore(['config', 'external', 'storage']);
+            let {schema, database} = this.getStore(['config', 'external']);
             this.log('trace', {in: 'postgre.externalOut', args: {message: {table, insert, select}, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}}});
             var query;
             let fullObjectName = [database, schema, table || (fn && fn.name)].join('.');

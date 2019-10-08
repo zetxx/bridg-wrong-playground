@@ -51,7 +51,7 @@ module.exports = (Node) => {
         async stop() {
             this.cleanup.map((fn) => fn());
             this.cleanup = [];
-            Object.keys(this.internalRemoteServices).map((client) => this.internalRemoteServices[client].destroy && setTimeout(this.internalRemoteServices[client].destroy, 3000));
+            Object.keys(this.internalRemoteServices).map((client) => this.internalRemoteServices[client].destroy && setTimeout(this.internalRemoteServices[client].destroy, 1000));
             return super.stop();
         }
 

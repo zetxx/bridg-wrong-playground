@@ -1,7 +1,7 @@
 const MainNode = require('bridg-wrong');
 
 const execOrder = [
-    'state', 'api', 'discovery', 'logger', 'service', 'external'
+    'api', 'discovery', 'logger', 'service', 'external'
 ];
 module.exports = (buildList) => {
     let producedNode = execOrder.reduce((prev, curr) => {
