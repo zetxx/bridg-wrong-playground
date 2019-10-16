@@ -8,7 +8,7 @@ module.exports = (Node) => {
     class ApiHttpDiscovery extends Node {
         constructor({name = 'Node'} = {}) {
             super();
-            var rcConf = getConfig(name, 'resolve', {
+            var rcConf = getConfig(name, ['resolve'], {
                 map: {
                     logger: 'logger'
                 },
