@@ -8,7 +8,7 @@
         "mdns-resolver": "*",
         "parse-strings-in-object": "*",
         "@hapi/hapi": "*",
-        "immutable": "4.0.*",
+        "immutable": ">=4.0.0-rc.12",
         "pino": "*",
         "pino-pretty": "*",
         "dns-discovery": "*",
