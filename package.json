@@ -1,7 +1,7 @@
 {
     "name": "bridg-wrong-playground",
     "description": "",
-    "version": "3.0.7",
+    "version": "3.0.8",
     "dependencies": {
         "rc": "*",
         "ws": "*",
