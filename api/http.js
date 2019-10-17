@@ -3,9 +3,8 @@ const Inert = require('@hapi/inert');
 const Vision = require('@hapi/vision');
 const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
-const uuid = require('uuid/v4');
 const HapiSwagger = require('hapi-swagger');
-const {getConfig} = require('../utils');
+const {getConfig, constructJsonrpcRequest} = require('../utils');
 const {serializeError} = require('serialize-error');
 const errors = require('bridg-wrong/lib/errors');
 
@@ -71,10 +70,11 @@ module.exports = (Node) => {
                 path: '/JSONRPC/{method*}',
                 options: {
                     tags: ['api'],
-                    handler: ({payload: {params, id = 0, method, meta: {globTraceId} = {}} = {}}, h) => {
-                        const msg = {message: params, meta: {method, globTraceId: (globTraceId || {id: uuid(), count: 1}), isNotification: (!id)}};
+                    handler: ({payload}, h) => {
+                        let msg = constructJsonrpcRequest(payload);
+                        let {id} = payload;
                         this.log('error', {in: 'api.http.handler.request.response', args: msg, error: 'MethodNotFound'});
-                        return {id, error: serializeError(errors.methodNotFound(params))};
+                        return {id, error: serializeError(errors.methodNotFound(msg))};
                     }
                 }
             });
@@ -83,8 +83,9 @@ module.exports = (Node) => {
                 return server.route(Object.assign({
                     method: 'POST',
                     path: `/JSONRPC/${methodName}`,
-                    handler: async({payload: {params, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}}, h) => {
-                        const msg = {message: params, meta: {method: methodName, responseMatchKey, globTraceId: (globTraceId || {id: uuid(), count: 1}), isNotification: (!id)}};
+                    handler: async({payload}, h) => {
+                        let {id} = payload;
+                        let msg = constructJsonrpcRequest(payload);
                         this.log('trace', {in: 'api.http.handler.request', args: msg});
                         try {
                             let response = {id, result: await this.apiRequestReceived(msg)};
@@ -111,7 +112,7 @@ module.exports = (Node) => {
             this.httpApiServer = server;
             this.log('info', {
                 in: 'api.http.start',
-                description: `api-http ready: ${JSON.stringify(this.getStore(['config', 'api']))} swagger: http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`
+                description: `api.http ready: ${JSON.stringify(this.getStore(['config', 'api']))} swagger: http://${this.getStore(['config', 'api', 'address'])}:${this.getStore(['config', 'api', 'port'])}/documentation`
             });
             return this.getStore(['config', 'api']);
         }
