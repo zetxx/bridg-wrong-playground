@@ -15,10 +15,15 @@ module.exports = (Node) => {
                 domain: 'testdomain',
                 loopback: false,
                 nodeName: name,
+                // map destination name to new name
                 map: {
                     logger: 'logger'
                 },
-                destinationClients: {}
+                // how to connect to internal destination: destinationName: proto
+                // proto: http/udp
+                destinationClients: {
+                    logger: 'udp'
+                }
             });
             var {domain, nodeName, map, destinationClients, ...discoveryOptions} = rcConf;
             this.name = nodeName;
@@ -88,6 +93,7 @@ module.exports = (Node) => {
             } else if (this.internalRemoteServices[sn].resolveResult === 'error') {
                 this.log('error', {in: 'discovery.resolve', args: {destination: sn, apiClient}, error: this.internalRemoteServices[sn].error});
                 this.internalRemoteServices[sn] = undefined;
+                return this.resolve(serviceName, apiClient);
             } else if (this.internalRemoteServices[sn].resolveResult === 'ok') {
                 this.log('info', {in: 'discovery.resolve', description: `resolved: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
                 return this.internalRemoteServices[sn].send;

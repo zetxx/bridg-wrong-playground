@@ -45,12 +45,12 @@ module.exports = (Node) => {
             });
         }
         // expose request to main api
-        request(destination, message) {
-            return this.getInternalCommunicationContext({}).request(destination, message);
+        request(destination, message, meta = {}) {
+            return this.getInternalCommunicationContext(meta).request(destination, message, meta);
         }
         // expose notification to main api
-        notification(destination, message) {
-            return this.getInternalCommunicationContext({}).notification(destination, message);
+        notification(destination, message, meta = {}) {
+            return this.getInternalCommunicationContext(meta).notification(destination, message, meta);
         }
     };
 };

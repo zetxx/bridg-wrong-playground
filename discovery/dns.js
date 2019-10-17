@@ -9,13 +9,19 @@ module.exports = (Node) => {
         constructor({name = 'Node'} = {}) {
             super();
             var rcConf = getConfig(name, ['resolve'], {
+                // map destination name to new name
                 map: {
                     logger: 'logger'
                 },
                 type: 'dns',
                 nodeName: name,
+                // to wich port to connect to
                 globalPort: 3000,
-                destinationClients: {}
+                // how to connect to internal destination: destinationName: proto
+                // proto: http/udp
+                destinationClients: {
+                    logger: 'udp'
+                }
             });
             var {nodeName, map, globalPort, destinationClients} = rcConf;
             this.destinationClients = destinationClients;
