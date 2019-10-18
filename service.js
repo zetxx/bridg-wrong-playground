@@ -20,7 +20,7 @@ module.exports = (Node) => {
             return Object.assign(
                 {},
                 (super.getFingerprint && super.getFingerprint()) || {},
-                {nodeName: this.name, domain: this.domain, procesUid: processUID}
+                {nodeName: this.name, domain: this.domain, processUID}
             );
         }
 
@@ -36,7 +36,7 @@ module.exports = (Node) => {
             return super.getGlobTraceId({globTraceId});
         }
 
-        // expose getInternalCommunicationContext because it is needet for request and notif.
+        // expose getInternalCommunicationContext because it is needed for request and notif.
         getInternalCommunicationContext(meta) {
             this.log('debug', {in: 'service.getInternalCommunicationContext', args: {meta}});
             return super.getInternalCommunicationContext(meta, {

@@ -118,7 +118,7 @@ module.exports = (Node) => {
             list.map((item) => this.registerExternalMethod(item));
         }
         async stop() {
-            this.log('info', {in: 'api.http.stop', description: `stoping: ${JSON.stringify(this.getStore(['config', 'api']))}`});
+            this.log('info', {in: 'api.http.stop', description: `stopping: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             await this.httpApiServer.close({timeout: 2000});
             return super.stop();
         }

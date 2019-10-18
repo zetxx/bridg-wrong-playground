@@ -53,8 +53,8 @@ class WS extends Service {
         return super.stop();
     }
 
-    publish(toChanell = 0, msg) {
-        this.clients.map(({ws, channel}) => toChanell === channel && ws.send(JSON.stringify(msg)));
+    publish(toChannel, msg) {
+        toChannel && this.clients.map(({ws, channel}) => toChannel === channel && ws.send(JSON.stringify(msg)));
     }
 }
 

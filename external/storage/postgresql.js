@@ -29,7 +29,7 @@ module.exports = (Node) => {
                 let client = await this.pool.connect();
                 await client.query('SELECT NOW()');
                 client.release();
-                this.log('info', {in: 'postgre.start', connect: 'succesfull'});
+                this.log('info', {in: 'postgre.start', connect: 'successfully'});
                 return super.start();
             } catch (e) {
                 this.log('error', {in: 'postgre.start', connect: 'failed', error: e});

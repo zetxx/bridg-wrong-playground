@@ -12,7 +12,7 @@ module.exports = (Node) => {
             super();
             var rcConf = getConfig(name, ['resolve'], {
                 type: 'mdns',
-                domain: 'testdomain',
+                domain: 'testDomain',
                 loopback: false,
                 nodeName: name,
                 // map destination name to new name
@@ -102,7 +102,7 @@ module.exports = (Node) => {
 
         async remoteApiRequest({destination, message, meta}) {
             var [nodeName, ...rest] = destination.split('.');
-            this.log('trace', {in: 'discovery.remoteApiRequest', description: `try to call microservice: ${destination}`, args: {destination, message, meta}});
+            this.log('trace', {in: 'discovery.remoteApiRequest', description: `try to call micro-service: ${destination}`, args: {destination, message, meta}});
             let request = await this.resolve(nodeName);
             return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})});
         }

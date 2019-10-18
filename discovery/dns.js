@@ -15,7 +15,7 @@ module.exports = (Node) => {
                 },
                 type: 'dns',
                 nodeName: name,
-                // to wich port to connect to
+                // to which port to connect to
                 globalPort: 3000,
                 // how to connect to internal destination: destinationName: proto
                 // proto: http/udp

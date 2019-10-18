@@ -13,7 +13,7 @@ module.exports = (buildList) => {
         return prev;
     }, MainNode);
 
-    // shutdwon and cleanup
+    // shutdown and cleanup
     class finalNode extends producedNode {
         start() {
             let s = super.start();

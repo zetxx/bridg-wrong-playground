@@ -3,7 +3,7 @@ const uuid = require('uuid').v4;
 const pso = require('parse-strings-in-object');
 
 // creates object based on path given and innerValue
-// if path is ['a', 'b'] and innerValue is {c: {d: 'xaxa'}} it will produce {a: {b: {c: {d: 'xaxa'}}}}
+// if path is ['a', 'b'] and innerValue is {c: {d: 'foo'}} it will produce {a: {b: {c: {d: 'foo'}}}}
 const arr2obj = (arr, innerValue) => {
     return arr.slice(0).reverse().reduce((a, c) => {
         return (!a && {[c]: innerValue}) || {[c]: a};

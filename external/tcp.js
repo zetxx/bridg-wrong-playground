@@ -18,32 +18,32 @@ module.exports = (Node) => {
             this.codec = codec;
         }
         start() {
-            var codecCofnig = getConfig(this.getNodeName() || 'buzzer', ['codec'], {
+            var codecConfig = getConfig(this.getNodeName() || 'buzzer', ['codec'], {
                 macCheck: false
             });
-            var c = (this.codec && this.codec(codecCofnig)) || codec(codecCofnig);
+            var c = (this.codec && this.codec(codecConfig)) || codec(codecConfig);
             this.encode = c.encode.bind(c);
             this.decode = c.decode.bind(c);
             this.receivedBuffer = Buffer.from('');
             this.connected = false;
             this.socket = undefined;
             this.lib = {...this.lib, connect: () => this.connect()};
-            this.lib = {...this.lib, dissconnect: () => this.dissconnect()};
+            this.lib = {...this.lib, disconnect: () => this.disconnect()};
             let s = super.start();
             this.setStore(
                 ['config', 'external'],
                 getConfig(this.getNodeName() || 'buzzer', ['external'], {
                     type: 'tcp',
-                    host: 'localhost', // to wich host to connect (where switch is listening)
-                    port: 5000, // to wich port to connect  (where switch is listening)
+                    host: 'localhost', // to which host to connect (where switch is listening)
+                    port: 5000, // to which port to connect  (where switch is listening)
                     responseTimeout: 10000 // throw timeout error after period of time (ms)
                 })
             );
-            setTimeout(() => !this.connected && this.triggerEvent('externalDisconnected'), 5000); // if only network gets restarted, send dissconect event if it is not connected
+            setTimeout(() => !this.connected && this.triggerEvent('externalDisconnected'), 5000); // if only network gets restarted, send disconnect event if it is not connected
             return s;
         }
         connect() {
-            this.log('debug', {in: 'tcp.connect', description: 'connection initialisation'});
+            this.log('debug', {in: 'tcp.connect', description: 'connection initialization'});
             return new Promise((resolve, reject) => {
                 if (!this.connected) {
                     this.socket = net.createConnection({port: this.getStore(['config', 'tcp', 'port']), host: this.getStore(['config', 'tcp', 'host'])});
@@ -70,8 +70,8 @@ module.exports = (Node) => {
             });
         }
 
-        dissconnect() {
-            this.log('debug', {in: 'dissconnect', description: 'connection initialisation'});
+        disconnect() {
+            this.log('debug', {in: 'disconnect', description: 'connection initialization'});
             return new Promise((resolve, reject) => {
                 return this.connected && this.socket.end();
             });

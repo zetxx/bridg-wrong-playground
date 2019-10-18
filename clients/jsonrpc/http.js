@@ -38,11 +38,11 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                         try {
                             const rp = JSON.parse(dataCollection.toString());
                             if (rp.error) {
-                                return reject({...rp, meta});
+                                return reject(Object.create({...rp, meta}));
                             }
                             return resolve(rp.result);
                         } catch (e) {
-                            return reject({error: e, meta});
+                            return reject(Object.create({error: e, meta}));
                         }
                     });
                 });
