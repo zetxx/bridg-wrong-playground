@@ -19,7 +19,7 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                     protocol,
                     hostname,
                     port,
-                    path: `/JSONRPC/${method}`,
+                    path: '/',
                     method: 'POST',
                     headers: {
                         'content-type': 'application/json',
@@ -35,11 +35,15 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                             dataCollection = Buffer.concat([dataCollection, data]);
                         }
                         resolved = true;
-                        const rp = JSON.parse(dataCollection.toString());
-                        if (rp.error) {
-                            return reject({...rp, meta});
+                        try {
+                            const rp = JSON.parse(dataCollection.toString());
+                            if (rp.error) {
+                                return reject({...rp, meta});
+                            }
+                            return resolve(rp.result);
+                        } catch (e) {
+                            return reject({error: e, meta});
                         }
-                        return resolve(rp.result);
                     });
                 });
 
