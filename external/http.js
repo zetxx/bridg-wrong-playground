@@ -1,5 +1,6 @@
+// const {promisify} = require('util');
+const {request} = require('http');
 const {getConfig} = require('../utils');
-const request = require('request-promise-native');
 const codec = (config) => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
 
 module.exports = (Node) => {
@@ -44,8 +45,25 @@ module.exports = (Node) => {
             }
             let timeout = this.getStore(['config', 'external', 'timeout']);
             try {
-                let requestResult = await request({timeout, ...result});
-                return this.externalIn({result: requestResult, meta: newMeta});
+                let {url, json, ...options} = result;
+                return new Promise((resolve, reject) => {
+                    let cb = (s) => {
+                        var data = [];
+                        s.on('data', (d) => data.push(d.toString('utf8')));
+                        s.on('end', (d) => {
+                            data = data.join('');
+                            if (json) {
+                                try {
+                                    data = JSON.parse(data);
+                                } catch (e) {
+                                    return this.externalIn({error: e, meta: newMeta});
+                                }
+                            }
+                            return this.externalIn({result: data, meta: newMeta});
+                        });
+                    };
+                    ((url && request(url, {timeout, ...options}, cb)) || request({timeout, ...options}, cb)).end();
+                });
             } catch (error) {
                 this.log('error', {in: 'externalHttp.externalOut.catch', meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, error, requestArgs: result});
                 return this.externalIn({error, meta: newMeta});
