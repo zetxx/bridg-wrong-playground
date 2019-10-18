@@ -1,6 +1,11 @@
+const MainNode = require('bridg-wrong');
 const rc = require('rc');
 const uuid = require('uuid').v4;
 const pso = require('parse-strings-in-object');
+
+const execOrder = [
+    'api', 'discovery', 'logger', 'service', 'external'
+];
 
 // creates object based on path given and innerValue
 // if path is ['a', 'b'] and innerValue is {c: {d: 'foo'}} it will produce {a: {b: {c: {d: 'foo'}}}}
@@ -11,6 +16,12 @@ const arr2obj = (arr, innerValue) => {
 };
 
 module.exports = {
+    throwOrReturn: function({result, error}) {
+        if (error) {
+            throw error;
+        }
+        return result;
+    },
     getConfig: (name, path, innerValue) => {
         // tries to extract specific path from object generated from rc(name, arr2obj(path, def))
         let rcRes = path.reduce((rcTmp, c) => rcTmp[c], rc(name, arr2obj(path, innerValue)));
@@ -26,5 +37,30 @@ module.exports = {
                 isNotification: (!id)
             }
         };
+    },
+    factory: (buildList) => {
+        let producedNode = execOrder.reduce((prev, curr) => {
+            if (buildList[curr]) {
+                var req = [curr];
+                buildList[curr].type && req.push(buildList[curr].type);
+                return require(`./${req.join('/')}.js`)(prev);
+            }
+            return prev;
+        }, MainNode);
+
+        // shutdown and cleanup
+        class finalNode extends producedNode {
+            start() {
+                let s = super.start();
+                process.on('SIGINT', () => {
+                    return (this.stop && this.stop());
+                });
+                process.on('SIGTERM', () => {
+                    return (this.stop && this.stop());
+                });
+                return s;
+            }
+        }
+        return finalNode;
     }
 };
