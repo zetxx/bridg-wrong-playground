@@ -1,9 +1,9 @@
 const {getConfig} = require('../utils');
 const http = require('http');
 const WebSocket = require('ws');
-const Factory = require('bridg-wrong-playground/factory.js');
+const {factory} = require('../utils');
 const discovery = getConfig('', ['resolve'], {}).type || 'mdns';
-const Service = Factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
+const Service = factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
 
 class WS extends Service {
     constructor(args) {

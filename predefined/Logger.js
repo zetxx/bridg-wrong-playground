@@ -1,8 +1,8 @@
-const Factory = require('bridg-wrong-playground/factory.js');
+const {factory} = require('bridg-wrong-playground/utils');
 const {serializeError} = require('serialize-error');
-const {getConfig} = require('../utils');
+const {factory} = require('../utils');
 const discovery = getConfig('', ['resolve'], {}).type || 'mdns';
-const Service = Factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
+const Service = factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
 
 class Logger extends Service {
     constructor(args) {
