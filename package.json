@@ -1,7 +1,7 @@
 {
     "name": "bridg-wrong-playground",
     "description": "",
-    "version": "4.0.5",
+    "version": "4.0.6",
     "dependencies": {
         "ajv": "^6.10.2",
         "rc": "*",
