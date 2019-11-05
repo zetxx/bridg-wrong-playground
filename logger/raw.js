@@ -9,11 +9,13 @@ module.exports = (Node) => {
         async initLogger() {}
 
         async log(level, message) {
+            console.log('------------------------');
             if (message && message.error) {
                 return console.error(message);
+            } else {
+                console.log(`${level}: `, message);
             }
-
-            console[level](message);
+            console.log('------------------------');
         }
 
         async stop() {
