@@ -79,7 +79,7 @@ module.exports = (Node) => {
                     } catch (error) {
                         this.internalRemoteServices[sn].resolveResult = 'error';
                         this.internalRemoteServices[sn].error = error;
-                        this.log('error', {in: 'discovery.resolve', description: `cannot resolve: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`, error});
+                        this.log('error', {in: 'discovery.resolve', description: `cannot resolve: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`, args: {error}});
                         throw error;
                     }
                 }, {});
@@ -88,10 +88,10 @@ module.exports = (Node) => {
                     await this.internalRemoteServices[sn].resolver;
                     return this.internalRemoteServices[sn].send;
                 } catch (error) {
-                    this.log('error', {in: 'discovery.resolve', args: {destination: sn, apiClient}, error});
+                    this.log('error', {in: 'discovery.resolve', args: {destination: sn, apiClient, error}});
                 }
             } else if (this.internalRemoteServices[sn].resolveResult === 'error') {
-                this.log('error', {in: 'discovery.resolve', args: {destination: sn, apiClient}, error: this.internalRemoteServices[sn].error});
+                this.log('error', {in: 'discovery.resolve', args: {destination: sn, apiClient, error: this.internalRemoteServices[sn].error}});
                 this.internalRemoteServices[sn] = undefined;
                 return this.resolve(serviceName, apiClient);
             } else if (this.internalRemoteServices[sn].resolveResult === 'ok') {

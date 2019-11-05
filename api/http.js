@@ -7,7 +7,7 @@ const {serializeError} = require('serialize-error');
 // https://npm.runkit.com/ajv
 const validationGen = ({params = {}, isNotification = 0, method = 'dummy.method'} = {}) => {
     return {
-        required: ['jsonrpc', 'meta', 'method', 'params'],
+        required: ['jsonrpc', 'method', 'params'],
         properties: {
             jsonrpc: {type: 'string', const: '2.0'},
             id: {type: 'integer', ...((isNotification && {maximum: 0}) || {minimum: 1})},

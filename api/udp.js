@@ -27,7 +27,7 @@ module.exports = (Node) => {
                     this.log('trace', {in: 'api.udp.on.listening', args: {config: this.getStore(['config', 'api'])}});
                     resolve();
                 });
-                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'api.udp.on.error', description: 'udp server error', error}));
+                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'api.udp.on.error', description: 'udp server error', args: {error}}));
                 this.apiUdpServer.on('message', async(buf, rinfo) => {
                     this.log('trace', {in: 'api.udp.on.message', args: {buffer: buf}});
                     var r = {};
@@ -35,7 +35,7 @@ module.exports = (Node) => {
                     try {
                         r = JSON.parse(s);
                     } catch (e) {
-                        this.log('error', {in: 'api.udp.on.message', args: s, error: e});
+                        this.log('error', {in: 'api.udp.on.message', args: {s, error: e}});
                     }
                     let {id} = r;
                     let msg = constructJsonrpcRequest(r);
@@ -43,7 +43,7 @@ module.exports = (Node) => {
                         let {response = {id}} = await this.apiRequestReceived(msg);
                         return {id, result: response};
                     } catch (e) {
-                        this.log('error', {in: 'api.udp.on.message', args: s, error: e});
+                        this.log('error', {in: 'api.udp.on.message', args: {s, error: e}});
                     }
                 });
                 this.apiUdpServer.bind(this.getStore(['config', 'api']));

@@ -46,19 +46,19 @@ module.exports = (Node) => {
             this.log('debug', {in: 'tcp.connect', description: 'connection initialization'});
             return new Promise((resolve, reject) => {
                 if (!this.connected) {
-                    this.socket = net.createConnection({port: this.getStore(['config', 'tcp', 'port']), host: this.getStore(['config', 'tcp', 'host'])});
+                    this.socket = net.createConnection({port: this.getStore(['config', 'external', 'port']), host: this.getStore(['config', 'external', 'host'])});
                     this.socket.on('data', (data) => this.dataReceived(data));
                     this.socket.on('connect', () => {
                         this.log('debug', {in: 'tcp.connect', description: 'connected'});
                         this.connected = true;
                         this.socket.on('error', (e) => {
-                            this.log('error', {in: 'tcp.connect.error', error: e});
+                            this.log('error', {in: 'tcp.connect.error', args: {error: e}});
                         });
                         this.log('info', {in: 'tcp.connect', description: 'network connected'});
                         resolve();
                     });
                     this.socket.on('error', (e) => {
-                        this.log('error', {in: 'tcp.connect.error', error: e});
+                        this.log('error', {in: 'tcp.connect.error', args: {error: e}});
                     });
                     this.socket.on('close', (e) => {
                         this.connected = false;
@@ -87,7 +87,7 @@ module.exports = (Node) => {
                 let fn = this.findExternalMethod({method: `event.${event}`});
                 return fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
             } catch (error) {
-                this.log('error', {in: 'tcp.triggerEvent', error});
+                this.log('error', {in: 'tcp.triggerEvent', args: {error}});
             }
         }
 
@@ -108,14 +108,14 @@ module.exports = (Node) => {
             this.log('debug', {in: 'tcp.dataReceived'});
             this.receivedBuffer = Buffer.concat([this.receivedBuffer, data]);
             this.getIncomingMessages()
-                .map((msgBuf) => Promise.resolve(msgBuf)
-                    .then((buffer) => {
-                        this.log('debug', {in: 'tcp.dataReceived', args: {buffer: buffer.toString('hex')}});
-                        return buffer;
-                    })
-                    .then((buffer) => this.externalIn({result: buffer})) // send parsed msg to terminal
-                    .catch((e) => (this.log('error', {in: 'tcp.dataReceived', error: e})))
-                );
+                .map(async(buffer) => {
+                    this.log('debug', {in: 'tcp.dataReceived', args: {buffer: buffer.toString('hex')}});
+                    try {
+                        return this.externalIn({result: buffer}); // send parsed msg to terminal
+                    } catch (e) {
+                        this.log('error', {in: 'tcp.dataReceived', args: {error: e}});
+                    }
+                });
         }
 
         matchExternalInToTx(result) {
@@ -141,15 +141,19 @@ module.exports = (Node) => {
                 var {apiRequestId, globTraceId} = this.matchExternalInToTx(parsed);
                 return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId: (globTraceId || {id: uuid(), count: 1}), apiRequestId}});
             } catch (error) {
-                this.log('error', {in: 'tcp.externalIn', error});
+                this.log('error', {in: 'tcp.externalIn', args: {error}});
             }
         }
 
         async externalOut({result, error, meta}) {
-            this.log('trace', {in: 'tcp.externalOut', args: {result, meta}, error});
+            this.log('trace', {in: 'tcp.externalOut', args: {result, meta}});
             if (error) {
-                this.socket.end(() => this.socket.destroy());
-                throw error;
+                this.socket.end(() => {
+                    this.log('trace', {in: 'tcp.externalOut.socketClosed', args: {error, meta}});
+                    this.socket.destroy()
+                });
+                this.log('trace', {in: 'tcp.externalOut.closingSocket', args: {error, meta}});
+                return this.log('error', {in: 'tcp.externalOut', args: {error, meta}});
             }
             try {
                 let buffer = await this.encode(result);
@@ -157,7 +161,7 @@ module.exports = (Node) => {
                 return this.socket.write(buffer);
             } catch (error) {
                 this.socket.end(() => this.socket.destroy());
-                this.log('error', {in: 'tcp.externalOut.catch', error});
+                this.log('error', {in: 'tcp.externalOut.catch', args: {error}});
                 throw error;
             }
         }

@@ -32,12 +32,12 @@ module.exports = (Node) => {
                 let result = await fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
                 return this.externalOut({result, meta: {method: event, event: true}});
             } catch (error) {
-                this.log('error', {in: 'externalHttp.triggerEvent', error});
+                this.log('error', {in: 'externalHttp.triggerEvent', args: {error}});
             }
         }
 
         async externalOut({result, error, meta}) {
-            this.log('trace', {in: 'externalHttp.externalOut', args: {meta, result}, error});
+            this.log('trace', {in: 'externalHttp.externalOut', args: {meta, result, error}});
             let newMeta = {...meta};
             if (meta && meta.event) {
                 newMeta = {method: [meta.method, 'response'].join('.')};
@@ -64,7 +64,7 @@ module.exports = (Node) => {
                     ((url && request(url, {timeout, ...options}, cb)) || request({timeout, ...options}, cb)).end();
                 });
             } catch (error) {
-                this.log('error', {in: 'externalHttp.externalOut.catch', meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, error, requestArgs: result});
+                this.log('error', {in: 'externalHttp.externalOut.catch', args: {meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}, result, error}});
                 return this.externalIn({error, meta: newMeta});
             }
         }

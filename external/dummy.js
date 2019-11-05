@@ -7,7 +7,7 @@ module.exports = (Node) => {
                 let result = await fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
                 return result && this.externalOut({result, meta: {method: event, event: true}});
             } catch (error) {
-                return this.log('error', {in: 'dummy.triggerEvent', error});
+                return this.log('error', {in: 'dummy.triggerEvent', args: {error}});
             }
         }
 

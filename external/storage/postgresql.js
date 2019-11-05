@@ -32,7 +32,7 @@ module.exports = (Node) => {
                 this.log('info', {in: 'postgre.start', connect: 'successfully'});
                 return super.start();
             } catch (e) {
-                this.log('error', {in: 'postgre.start', connect: 'failed', error: e});
+                this.log('error', {in: 'postgre.start', connect: 'failed', args: {error: e}});
                 throw e;
             }
         }
@@ -65,7 +65,7 @@ module.exports = (Node) => {
                 this.log('debug', {in: 'postgre.externalOut', args: {result: res.rows, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}}});
                 return this.externalIn({result: res.rows, meta});
             } catch (e) {
-                this.log('error', {in: 'postgre.externalOut', error: e, args: {meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}}});
+                this.log('error', {in: 'postgre.externalOut', args: {error: e, meta: {...meta, reject: undefined, resolve: undefined, timeoutId: undefined}}});
                 return this.externalIn({error: e, meta});
             } finally {
                 client.release();
