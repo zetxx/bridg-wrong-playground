@@ -1,4 +1,4 @@
-const {factory} = require('bridg-wrong-playground/utils');
+const {getConfig, factory} = require('bridg-wrong-playground/utils');
 const {serializeError} = require('serialize-error');
 const {factory} = require('../utils');
 const discovery = getConfig('', ['resolve'], {}).type || 'mdns';

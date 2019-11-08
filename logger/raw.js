@@ -1,5 +1,23 @@
+const {getConfig} = require('bridg-wrong-playground/utils');
+
 module.exports = (Node) => {
     return class Logger extends Node {
+        constructor(args) {
+            super(args);
+            this.setStore(
+                ['config', 'log'],
+                getConfig(this.getNodeName() || 'buzzer', ['log'], {
+                    level: 'trace',
+                    logOwn: false,
+                    destinations: [],
+                    stdout: true
+                })
+            );
+            this.logger = require('pino')({
+                prettyPrint: {colorize: true},
+                level: this.getStore(['config', 'log', 'level'])
+            });
+        }
         async start() {
             let s = await super.start();
             this.log('info', {in: 'logger.start', description: 'ready'});
@@ -9,19 +27,7 @@ module.exports = (Node) => {
         async initLogger() {}
 
         async log(level, message) {
-            console.log(this.getFingerprint(), '------------------------');
-            try {
-                var beautified = JSON.stringify(message, null, 4);
-            } catch (e) {}
-
-            if (level === 'error' || (message && message.args && message.args.error)) {
-                (message.args && message.args.error) && (console.error(message.args.error) | console.log('error', beautified));
-                (!message.args || !message.args.error) && console.log('error', beautified);
-                return 1;
-            } else {
-                console.log(`${level}: `, beautified);
-            }
-            console.log('------------------------');
+            this.logger[level]({...message, pid: this.name});
         }
 
         async stop() {
