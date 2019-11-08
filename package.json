@@ -18,7 +18,8 @@
         "bridg-wrong": "*"
     },
     "devDependencies": {
-        "why-is-node-running": "*"
+        "why-is-node-running": "*",
+        "semantic-release": "^15.0.0"
     },
     "author": "zetxx",
     "license": "MIT"
