@@ -1,4 +1,4 @@
-const {getConfig} = require('bridg-wrong-playground/utils');
+const {getConfig} = require('../utils');
 
 module.exports = (Node) => {
     return class Logger extends Node {
