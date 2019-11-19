@@ -50,7 +50,7 @@ module.exports = (Node) => {
         async resolve(serviceName, apiClient) {
             var hostname = this.resolveMap[serviceName] || serviceName;
             apiClient = apiClient || this.destinationClients[serviceName];
-            this.log('debug', {in: 'discovery.resolve', serviceName, apiClient, hostname, globalPort: this.globalPort});
+            this.log('info', {in: 'discovery.resolve', serviceName, apiClient, hostname, globalPort: this.globalPort});
             if (!this.internalRemoteServices[hostname]) {
                 this.internalRemoteServices[hostname] = jsonrpcClient[apiClient || 'http']({hostname, port: this.globalPort});
                 return this.internalRemoteServices[hostname].send;

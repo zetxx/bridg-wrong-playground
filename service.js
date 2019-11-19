@@ -38,7 +38,7 @@ module.exports = (Node) => {
 
         // expose getInternalCommunicationContext because it is needed for request and notif.
         getInternalCommunicationContext(meta) {
-            this.log('debug', {in: 'service.getInternalCommunicationContext', meta});
+            this.log('trace', {in: 'service.getInternalCommunicationContext', meta});
             return super.getInternalCommunicationContext(meta, {
                 lib: this.lib || {},
                 log: (...args) => this.log(...args)

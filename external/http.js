@@ -37,7 +37,7 @@ module.exports = (Node) => {
         }
 
         async externalOut({result, error, meta}) {
-            this.log('debug', {in: 'externalHttp.externalOut', meta, result, error});
+            this.log('info', {in: 'externalHttp.externalOut', meta, result, error});
             let newMeta = {...meta};
             if (meta && meta.event) {
                 newMeta = {method: [meta.method, 'response'].join('.')};

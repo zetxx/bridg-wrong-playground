@@ -45,11 +45,11 @@ module.exports = (Node) => {
                         req.on('data', (chunk) => data.push(chunk.toString('utf8')));
                         req.on('end', async() => {
                             try {
-                                this.log('debug', {in: 'api.http.method', method, url, request: data});
+                                this.log('info', {in: 'api.http.method', method, url, request: data});
                                 let ret = await this.callApiMethod(data.join(''));
                                 res.writeHead(200);
                                 res.end(JSON.stringify(ret));
-                                this.log('debug', {in: 'api.http.method', method, url, response: ret});
+                                this.log('info', {in: 'api.http.method', method, url, response: ret});
                             } catch (e) {
                                 let {error, id} = e;
                                 res.writeHead(500);
