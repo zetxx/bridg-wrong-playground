@@ -29,18 +29,19 @@ module.exports = (Node) => {
                 });
                 this.apiUdpServer.on('error', (error) => this.log('error', {in: 'api.udp.on.error', description: 'udp server error', args: {error}}));
                 this.apiUdpServer.on('message', async(buf, rinfo) => {
-                    this.log('trace', {in: 'api.udp.on.message', args: {buffer: buf}});
+                    this.log('debug', {in: 'api.udp.on.message', request: buf});
                     var r = {};
                     var s = buf.toString('utf8');
                     try {
                         r = JSON.parse(s);
                     } catch (e) {
-                        this.log('error', {in: 'api.udp.on.message', args: {s, error: e}});
+                        this.log('error', {in: 'api.udp.on.message', s, error: e});
                     }
                     let {id} = r;
                     let msg = constructJsonrpcRequest(r);
                     try {
                         let {response = {id}} = await this.apiRequestReceived(msg);
+                        this.log('debug', {in: 'api.udp.on.message', response: response});
                         return {id, result: response};
                     } catch (e) {
                         this.log('error', {in: 'api.udp.on.message', args: {s, error: e}});

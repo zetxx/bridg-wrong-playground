@@ -45,9 +45,11 @@ module.exports = (Node) => {
                         req.on('data', (chunk) => data.push(chunk.toString('utf8')));
                         req.on('end', async() => {
                             try {
+                                this.log('debug', {in: 'api.http.method', method, url, request: data});
                                 let ret = await this.callApiMethod(data.join(''));
                                 res.writeHead(200);
                                 res.end(JSON.stringify(ret));
+                                this.log('debug', {in: 'api.http.method', method, url, response: ret});
                             } catch (e) {
                                 let {error, id} = e;
                                 res.writeHead(500);
@@ -56,20 +58,20 @@ module.exports = (Node) => {
                         });
                     } else if (method === 'GET') {
                         if (url === '/healthz') {
-                            this.log('trace', {in: 'api.http.request.healthz', args: {method, url}});
+                            this.log('trace', {in: 'api.http.request.healthz', method, url});
                             res.writeHead(200);
                             res.end('{"healthCheck": true}');
                         } else if (url === '/api') {
-                            this.log('trace', {in: 'api.http.request.api', args: {method, url}});
+                            this.log('trace', {in: 'api.http.request.api', method, url});
                             res.writeHead(200);
                             res.end(JSON.stringify(this.apiRoutes.map(({methodName, validation}) => ({[methodName]: validation || null}))));
                         } else {
-                            this.log('trace', {in: 'api.http.request.404', args: {method, url}});
+                            this.log('trace', {in: 'api.http.request.404', method, url});
                             res.writeHead(404);
                             res.end(null);
                         }
                     } else {
-                        this.log('trace', {in: 'api.http.request.404', args: {method, url}});
+                        this.log('trace', {in: 'api.http.request.404', method, url});
                         res.writeHead(404);
                         res.end(null);
                     }
@@ -82,7 +84,7 @@ module.exports = (Node) => {
         }
 
         async callApiMethod(requestData) {
-            this.log('trace', {in: 'api.http.callApiMethod', args: {msg: requestData}});
+            this.log('trace', {in: 'api.http.callApiMethod', msg: requestData});
             try {
                 let {method, ...json} = JSON.parse(requestData);
                 let {id} = json;
@@ -91,7 +93,7 @@ module.exports = (Node) => {
                 let validate = ajv.compile(validation);
                 let valid = validate({method, ...json});
                 if (!valid) {
-                    this.log('error', {in: 'api.http.callApiMethod', args: {error: validate.errors}});
+                    this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
                     throw Object.create({id, error: validate.errors});
                 }
                 let msg = constructJsonrpcRequest({method, ...json});

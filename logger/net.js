@@ -22,7 +22,7 @@ module.exports = (Node) => {
                     return (logWire = logger);
                 }
             } catch (error) {
-                this.log('error', {in: 'logger.initLogger', args: {error}});
+                this.log('error', {in: 'logger.initLogger', error});
                 !stopping && this.initLogger();
             }
         }

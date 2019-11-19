@@ -50,7 +50,7 @@ module.exports = (Node) => {
         async resolve(serviceName, apiClient) {
             var hostname = this.resolveMap[serviceName] || serviceName;
             apiClient = apiClient || this.destinationClients[serviceName];
-            this.log('info', {in: 'discovery.resolve', args: {serviceName, apiClient, hostname, globalPort: this.globalPort}});
+            this.log('debug', {in: 'discovery.resolve', serviceName, apiClient, hostname, globalPort: this.globalPort});
             if (!this.internalRemoteServices[hostname]) {
                 this.internalRemoteServices[hostname] = jsonrpcClient[apiClient || 'http']({hostname, port: this.globalPort});
                 return this.internalRemoteServices[hostname].send;
@@ -60,7 +60,7 @@ module.exports = (Node) => {
 
         async remoteApiRequest({destination, message, meta}) {
             var [nodeName, ...rest] = destination.split('.');
-            this.log('trace', {in: 'discovery.remoteApiRequest', args: {destination, message, meta}});
+            this.log('trace', {in: 'discovery.remoteApiRequest', destination, message, meta});
             let request = await this.resolve(nodeName);
             return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})});
         }
