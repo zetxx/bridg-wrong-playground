@@ -7,7 +7,8 @@ const logMethodFilterCreator = (fromLevel) => {
         'debug',
         'info',
         'warn',
-        'error'
+        'error',
+        'fatal'
     ]
         .map((name, i) => ({name: name, idx: i})).reduce((a, {name, idx}) => ({list: a.list.concat(name), map: {...a.map, [name]: idx}}), {list: [], map: {}});
 
