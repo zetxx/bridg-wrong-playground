@@ -23,5 +23,9 @@
         "semantic-release": "^15.0.0"
     },
     "author": "zetxx",
-    "license": "MIT"
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/zetxx/bridg-wrong-playground.git"
+      }
 }
