@@ -1,5 +1,5 @@
 const {serializeError} = require('serialize-error');
-const {getConfig, factory} = require('../../utils');
+const {getConfig, factory} = require('../utils');
 const discovery = getConfig('', ['resolve'], {}).type || 'mdns';
 const Service = factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
 

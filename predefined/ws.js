@@ -1,4 +1,4 @@
-const {getConfig, factory} = require('utils');
+const {getConfig, factory} = require('../utils');
 const http = require('http');
 const WebSocket = require('ws');
 const discovery = getConfig('', ['resolve'], {}).type || 'mdns';
