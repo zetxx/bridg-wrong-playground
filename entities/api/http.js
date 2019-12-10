@@ -30,7 +30,7 @@ module.exports = (Node) => {
             await super.start();
             this.setStore(
                 ['config', 'api'],
-                getConfig(this.getNodeId() || 'buzzer', ['api'], {
+                getConfig(this.getNodeId(), ['api'], {
                     port: 8080,
                     address: '0.0.0.0'
                 })

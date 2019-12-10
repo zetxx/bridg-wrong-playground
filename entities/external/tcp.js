@@ -18,7 +18,7 @@ module.exports = (Node) => {
             this.codec = codec;
         }
         start() {
-            var codecConfig = getConfig(this.getNodeId() || 'buzzer', ['codec'], {
+            var codecConfig = getConfig(this.getNodeId(), ['codec'], {
                 macCheck: false
             });
             var c = (this.codec && this.codec(codecConfig)) || codec(codecConfig);
@@ -32,7 +32,7 @@ module.exports = (Node) => {
             let s = super.start();
             this.setStore(
                 ['config', 'external'],
-                getConfig(this.getNodeId() || 'buzzer', ['external'], {
+                getConfig(this.getNodeId(), ['external'], {
                     type: 'tcp',
                     host: 'localhost', // to which host to connect (where switch is listening)
                     port: 5000, // to which port to connect  (where switch is listening)

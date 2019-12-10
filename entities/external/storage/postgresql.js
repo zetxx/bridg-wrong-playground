@@ -9,7 +9,7 @@ module.exports = (Node) => {
             super(...args);
             this.setStore(
                 ['config', 'external'],
-                getConfig(this.getNodeId() || 'buzzer', ['external'], {
+                getConfig(this.getNodeId(), ['external'], {
                     level: 'trace',
                     host: '0.0.0.0',
                     max: 6,

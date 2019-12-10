@@ -8,7 +8,7 @@ class Logger extends Service {
         super(args);
         this.setStore(
             ['config', 'log'],
-            getConfig(this.getNodeId() || 'buzzer', ['log'], {
+            getConfig(this.getNodeId(), ['log'], {
                 level: 'trace',
                 logOwn: false,
                 destinations: [],

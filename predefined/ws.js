@@ -9,7 +9,7 @@ class WS extends Service {
         super(args);
         this.setStore(
             ['config', 'ws'],
-            getConfig(this.getNodeId() || 'buzzer', ['ws'], {
+            getConfig(this.getNodeId(), ['ws'], {
                 listenPort: 10000
             })
         );

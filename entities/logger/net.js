@@ -28,7 +28,7 @@ module.exports = (Node) => {
     return class Logger extends Node {
         constructor(...args) {
             super(...args);
-            let log = getConfig(this.getNodeId() || 'buzzer', ['log'], {
+            let log = getConfig(this.getNodeId(), ['log'], {
                 level: 'trace'
             });
             this.logMethodFilter = logMethodFilterCreator(log.level);

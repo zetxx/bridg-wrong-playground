@@ -9,7 +9,7 @@ module.exports = (Node) => {
             this.codec = codec;
         }
         start() {
-            var codecConfig = getConfig(this.getNodeId() || 'buzzer', ['codec'], {});
+            var codecConfig = getConfig(this.getNodeId(), ['codec'], {});
             var c = (this.codec && this.codec(codecConfig)) || codec(codecConfig);
             this.encode = c.encode.bind(c);
             this.decode = c.decode.bind(c);
@@ -17,7 +17,7 @@ module.exports = (Node) => {
                 .then(() => (
                     this.setStore(
                         ['config', 'external'],
-                        getConfig(this.getNodeId() || 'buzzer', ['external'], {
+                        getConfig(this.getNodeId(), ['external'], {
                             type: 'http',
                             timeout: 10000
                         })
