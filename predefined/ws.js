@@ -1,7 +1,6 @@
-const {getConfig} = require('../utils');
+const {getConfig, factory} = require('utils');
 const http = require('http');
 const WebSocket = require('ws');
-const {factory} = require('../utils');
 const discovery = getConfig('', ['resolve'], {}).type || 'mdns';
 const Service = factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
 
@@ -10,7 +9,7 @@ class WS extends Service {
         super(args);
         this.setStore(
             ['config', 'ws'],
-            getConfig(this.getNodeName() || 'buzzer', ['ws'], {
+            getConfig(this.getNodeId() || 'buzzer', ['ws'], {
                 listenPort: 10000
             })
         );

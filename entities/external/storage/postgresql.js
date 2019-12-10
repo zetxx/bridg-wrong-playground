@@ -5,11 +5,11 @@ const {Pool} = require('pg');
 
 module.exports = (Node) => {
     class Postgre extends Node {
-        constructor(args) {
-            super(args);
+        constructor(...args) {
+            super(...args);
             this.setStore(
                 ['config', 'external'],
-                getConfig(this.getNodeName() || 'buzzer', ['external'], {
+                getConfig(this.getNodeId() || 'buzzer', ['external'], {
                     level: 'trace',
                     host: '0.0.0.0',
                     max: 6,

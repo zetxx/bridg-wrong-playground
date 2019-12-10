@@ -1,4 +1,4 @@
-const {getConfig} = require('../utils');
+const {getConfig} = require('../../utils');
 const jsonrpcClient = {
     http: require('../clients/jsonrpc/http'),
     udp: require('../clients/jsonrpc/udp')
@@ -6,15 +6,14 @@ const jsonrpcClient = {
 
 module.exports = (Node) => {
     class ApiHttpDiscovery extends Node {
-        constructor({name = 'Node'} = {}) {
-            super();
-            var rcConf = getConfig(name, ['resolve'], {
+        constructor(...args) {
+            super(...args);
+            var rcConf = getConfig(this.getNodeId(), ['resolve'], {
                 // map destination name to new name
                 map: {
                     logger: 'logger'
                 },
                 type: 'dns',
-                nodeName: name,
                 // to which port to connect to
                 globalPort: 3000,
                 // how to connect to internal destination: destinationName: proto
@@ -23,22 +22,17 @@ module.exports = (Node) => {
                     logger: 'udp'
                 }
             });
-            var {nodeName, map, globalPort, destinationClients} = rcConf;
+            var {map, globalPort, destinationClients} = rcConf;
             this.destinationClients = destinationClients;
-            this.name = nodeName;
             this.resolveMap = map;
             this.globalPort = globalPort;
             this.internalRemoteServices = {};
         }
 
-        getNodeName() {
-            return this.name;
-        }
-
         async start() {
-            this.log('info', {in: 'discovery.start', description: `discovery[${this.name}]: pending`});
+            this.log('info', {in: 'discovery.start', description: `discovery[${this.getNodeId()}]: pending`});
             let prev = await super.start();
-            this.log('info', {in: 'discovery.start', description: `discovery[${this.name}]: ready`});
+            this.log('info', {in: 'discovery.start', description: `discovery[${this.getNodeId()}]: ready`});
             return prev;
         }
 
@@ -62,7 +56,7 @@ module.exports = (Node) => {
             var [nodeName, ...rest] = destination.split('.');
             this.log('trace', {in: 'discovery.remoteApiRequest', destination, message, meta});
             let request = await this.resolve(nodeName);
-            return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.name, destination})});
+            return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.getNodeId(), destination})});
         }
     }
     return ApiHttpDiscovery;

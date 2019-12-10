@@ -1,7 +1,7 @@
 const http = require('http');
 var Ajv = require('ajv');
 // var conv = require('joi-to-json-schema');
-const {getConfig, constructJsonrpcRequest} = require('../utils');
+const {getConfig, constructJsonrpcRequest} = require('../../utils');
 const {serializeError} = require('serialize-error');
 
 // https://npm.runkit.com/ajv
@@ -20,8 +20,8 @@ const validationGen = ({params = {}, isNotification = 0, method = 'dummy.method'
 
 module.exports = (Node) => {
     class ApiHttp extends Node {
-        constructor() {
-            super();
+        constructor(...args) {
+            super(...args);
             this.apiRoutes = [];
             this.httpApiServer = null;
         }
@@ -30,7 +30,7 @@ module.exports = (Node) => {
             await super.start();
             this.setStore(
                 ['config', 'api'],
-                getConfig(this.getNodeName() || 'buzzer', ['api'], {
+                getConfig(this.getNodeId() || 'buzzer', ['api'], {
                     port: 8080,
                     address: '0.0.0.0'
                 })

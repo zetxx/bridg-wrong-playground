@@ -1,5 +1,5 @@
 const {serializeError} = require('serialize-error');
-const {getConfig} = require('../utils');
+const {getConfig} = require('../../utils');
 
 const logMethodFilterCreator = (fromLevel) => {
     const logMethods = [
@@ -28,7 +28,7 @@ module.exports = (Node) => {
     return class Logger extends Node {
         constructor(...args) {
             super(...args);
-            let log = getConfig(this.getNodeName() || 'buzzer', ['log'], {
+            let log = getConfig(this.getNodeId() || 'buzzer', ['log'], {
                 level: 'trace'
             });
             this.logMethodFilter = logMethodFilterCreator(log.level);

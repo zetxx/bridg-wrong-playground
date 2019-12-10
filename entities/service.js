@@ -20,7 +20,7 @@ module.exports = (Node) => {
             return Object.assign(
                 {},
                 (super.getFingerprint && super.getFingerprint()) || {},
-                {nodeName: this.name, domain: this.domain, processUID}
+                {nodeName: this.getNodeId(), domain: this.domain, processUID}
             );
         }
 

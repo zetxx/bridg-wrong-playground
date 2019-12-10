@@ -1,5 +1,5 @@
 const {request} = require('http');
-const {getConfig} = require('../utils');
+const {getConfig} = require('../../utils');
 const codec = (config) => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
 
 module.exports = (Node) => {
@@ -9,7 +9,7 @@ module.exports = (Node) => {
             this.codec = codec;
         }
         start() {
-            var codecConfig = getConfig(this.getNodeName() || 'buzzer', ['codec'], {});
+            var codecConfig = getConfig(this.getNodeId() || 'buzzer', ['codec'], {});
             var c = (this.codec && this.codec(codecConfig)) || codec(codecConfig);
             this.encode = c.encode.bind(c);
             this.decode = c.decode.bind(c);
@@ -17,7 +17,7 @@ module.exports = (Node) => {
                 .then(() => (
                     this.setStore(
                         ['config', 'external'],
-                        getConfig(this.getNodeName() || 'buzzer', ['external'], {
+                        getConfig(this.getNodeId() || 'buzzer', ['external'], {
                             type: 'http',
                             timeout: 10000
                         })

@@ -1,11 +1,11 @@
 const dgram = require('dgram');
 const udp = dgram.createSocket('udp4');
-const {getConfig, constructJsonrpcRequest} = require('../utils');
+const {getConfig, constructJsonrpcRequest} = require('../../utils');
 
 module.exports = (Node) => {
     class ApiUdp extends Node {
-        constructor() {
-            super();
+        constructor(...args) {
+            super(...args);
             this.apiRoutes = [];
             this.apiUdpServer = null;
         }
@@ -14,7 +14,7 @@ module.exports = (Node) => {
             await super.start();
             this.setStore(
                 ['config', 'api'],
-                getConfig(this.getNodeName() || 'buzzer', ['api'], {
+                getConfig(this.getNodeId() || 'buzzer', ['api'], {
                     type: 'udp',
                     port: 8080,
                     address: '0.0.0.0'

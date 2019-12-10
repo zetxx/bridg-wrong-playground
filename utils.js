@@ -1,7 +1,9 @@
-const MainNode = require('bridg-wrong');
 const rc = require('rc');
 const uuid = require('uuid').v4;
 const pso = require('parse-strings-in-object');
+const bw = require('bridg-wrong');
+const First = require('./entities/first');
+const Last = require('./entities/last');
 
 const execOrder = [
     'api', 'discovery', 'logger', 'service', 'external'
@@ -43,24 +45,11 @@ module.exports = {
             if (buildList[curr]) {
                 var req = [curr];
                 buildList[curr].type && req.push(buildList[curr].type);
-                return require(`./${req.join('/')}.js`)(prev);
+                return require(`./entities/${req.join('/')}`)(prev);
             }
             return prev;
-        }, MainNode);
+        }, First(module.exports)(bw));
 
-        // shutdown and cleanup
-        class finalNode extends producedNode {
-            start() {
-                let s = super.start();
-                process.on('SIGINT', () => {
-                    return (this.stop && this.stop());
-                });
-                process.on('SIGTERM', () => {
-                    return (this.stop && this.stop());
-                });
-                return s;
-            }
-        }
-        return finalNode;
+        return Last(producedNode);
     }
 };

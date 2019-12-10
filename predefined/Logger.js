@@ -1,5 +1,5 @@
 const {serializeError} = require('serialize-error');
-const {getConfig, factory} = require('../utils');
+const {getConfig, factory} = require('../../utils');
 const discovery = getConfig('', ['resolve'], {}).type || 'mdns';
 const Service = factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
 
@@ -8,7 +8,7 @@ class Logger extends Service {
         super(args);
         this.setStore(
             ['config', 'log'],
-            getConfig(this.getNodeName() || 'buzzer', ['log'], {
+            getConfig(this.getNodeId() || 'buzzer', ['log'], {
                 level: 'trace',
                 logOwn: false,
                 destinations: [],
@@ -36,7 +36,7 @@ class Logger extends Service {
         if (message.error) {
             message.error = serializeError(message.error);
         }
-        const toBeLogged = Object.assign({pid: `${this.name}.${this.domain}`, logLevel: lvl, domain: this.domain, timestamp: Date.now(), date: new Date()}, message);
+        const toBeLogged = Object.assign({pid: `${this.getNodeId()}.${this.domain}`, logLevel: lvl, domain: this.domain, timestamp: Date.now(), date: new Date()}, message);
         stdout && this.logger[lvl](toBeLogged);
         return toBeLogged;
     }

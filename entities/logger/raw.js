@@ -1,12 +1,12 @@
-const {getConfig} = require('../utils');
+const {getConfig} = require('../../utils');
 
 module.exports = (Node) => {
     return class Logger extends Node {
-        constructor(args) {
-            super(args);
+        constructor(...args) {
+            super(...args);
             this.setStore(
                 ['config', 'log'],
-                getConfig(this.getNodeName() || 'buzzer', ['log'], {
+                getConfig(this.getNodeId() || 'buzzer', ['log'], {
                     level: 'trace',
                     logOwn: false,
                     destinations: [],
@@ -27,7 +27,7 @@ module.exports = (Node) => {
         async initLogger() {}
 
         async log(level, message) {
-            this.logger[level]({...message, pid: this.name});
+            this.logger[level]({...message, pid: this.getNodeId()});
         }
 
         async stop() {
