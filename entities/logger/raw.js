@@ -1,16 +1,13 @@
-const {getConfig} = require('../../utils');
-
 module.exports = (Node) => {
     return class Logger extends Node {
         constructor(...args) {
             super(...args);
             this.setStore(
                 ['config', 'log'],
-                getConfig(this.getNodeId(), ['log'], {
+                this.getConfig(['log'], {
                     level: 'trace',
-                    logOwn: false,
-                    destinations: [],
-                    stdout: true
+                    logOwn: false, // do we log instance own logs
+                    stdout: true // do we pipe to stdout
                 })
             );
             this.logger = require('pino')({

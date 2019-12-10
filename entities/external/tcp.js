@@ -1,5 +1,4 @@
 const net = require('net');
-const {getConfig} = require('../../utils');
 const uuid = require('uuid/v4');
 const codec = (config) => ({encode: (msg) => Promise.resolve(msg), decode: (msg) => Promise.resolve(msg)});
 
@@ -18,7 +17,7 @@ module.exports = (Node) => {
             this.codec = codec;
         }
         start() {
-            var codecConfig = getConfig(this.getNodeId(), ['codec'], {
+            var codecConfig = this.getConfig(['codec'], {
                 macCheck: false
             });
             var c = (this.codec && this.codec(codecConfig)) || codec(codecConfig);
@@ -32,14 +31,18 @@ module.exports = (Node) => {
             let s = super.start();
             this.setStore(
                 ['config', 'external'],
-                getConfig(this.getNodeId(), ['external'], {
+                this.getConfig(['external'], {
                     type: 'tcp',
-                    host: 'localhost', // to which host to connect (where switch is listening)
-                    port: 5000, // to which port to connect  (where switch is listening)
-                    responseTimeout: 10000 // throw timeout error after period of time (ms)
+                    // to which host to connect (where switch is listening)
+                    host: 'localhost',
+                    // to which port to connect  (where switch is listening)
+                    port: 5000,
+                    // throw timeout error after period of time (ms)
+                    responseTimeout: 10000
                 })
             );
-            setTimeout(() => !this.connected && this.triggerEvent('externalDisconnected'), 5000); // if only network gets restarted, send disconnect event if it is not connected
+            // if only network gets restarted, send disconnect event if it is not connected
+            setTimeout(() => !this.connected && this.triggerEvent('externalDisconnected'), 5000);
             return s;
         }
         connect() {

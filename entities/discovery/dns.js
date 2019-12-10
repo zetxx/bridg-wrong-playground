@@ -1,4 +1,3 @@
-const {getConfig} = require('../../utils');
 const jsonrpcClient = {
     http: require('../clients/jsonrpc/http'),
     udp: require('../clients/jsonrpc/udp')
@@ -8,7 +7,7 @@ module.exports = (Node) => {
     class ApiHttpDiscovery extends Node {
         constructor(...args) {
             super(...args);
-            var rcConf = getConfig(this.getNodeId(), ['resolve'], {
+            var rcConf = this.getConfig(['resolve'], {
                 // map destination name to new name
                 map: {
                     logger: 'logger'

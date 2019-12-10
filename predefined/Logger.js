@@ -8,11 +8,11 @@ class Logger extends Service {
         super(args);
         this.setStore(
             ['config', 'log'],
-            getConfig(this.getNodeId(), ['log'], {
+            this.getConfig(['log'], {
                 level: 'trace',
-                logOwn: false,
-                destinations: [],
-                stdout: true
+                logOwn: false, // see logger/net
+                destinations: [], // to were to send incoming requests
+                stdout: true // see logger/net
             })
         );
         this.logger = require('pino')({

@@ -1,4 +1,3 @@
-const {getConfig} = require('../../utils');
 const {Pool} = require('pg');
 
 // !!!! WARNING, SQL INJECTIONS POSSIBLE
@@ -9,16 +8,15 @@ module.exports = (Node) => {
             super(...args);
             this.setStore(
                 ['config', 'external'],
-                getConfig(this.getNodeId(), ['external'], {
-                    level: 'trace',
-                    host: '0.0.0.0',
-                    max: 6,
-                    idleTimeoutMillis: 30000,
-                    connectionTimeoutMillis: 2000,
-                    user: 'some.user',
-                    password: 'some.password',
-                    database: 'some.database',
-                    schema: 'some.schema'
+                this.getConfig(['external'], {
+                    host: '0.0.0.0', // connect to
+                    max: 6, // connections count
+                    idleTimeoutMillis: 30000, // posgre conn iddle timeout
+                    connectionTimeoutMillis: 2000, // posgre conn timeout
+                    user: 'some.user', // pg user
+                    password: 'some.password', // pg pass
+                    database: 'some.database', // pg db name
+                    schema: 'some.schema' // pg db schema
                 })
             );
             this.pool = new Pool(this.getStore(['config', 'external']));

@@ -9,8 +9,8 @@ class WS extends Service {
         super(args);
         this.setStore(
             ['config', 'ws'],
-            getConfig(this.getNodeId(), ['ws'], {
-                listenPort: 10000
+            this.getConfig(['ws'], {
+                listenPort: 10000 // web socket listen port
             })
         );
     }

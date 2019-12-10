@@ -1,7 +1,7 @@
 const http = require('http');
 var Ajv = require('ajv');
 // var conv = require('joi-to-json-schema');
-const {getConfig, constructJsonrpcRequest} = require('../../utils');
+const {constructJsonrpcRequest} = require('../../utils');
 const {serializeError} = require('serialize-error');
 
 // https://npm.runkit.com/ajv
@@ -30,9 +30,9 @@ module.exports = (Node) => {
             await super.start();
             this.setStore(
                 ['config', 'api'],
-                getConfig(this.getNodeId(), ['api'], {
-                    port: 8080,
-                    address: '0.0.0.0'
+                this.getConfig(['api'], {
+                    port: 8080, // listen port
+                    address: '0.0.0.0' // listen address
                 })
             );
             this.log('info', {in: 'api.http.start', description: `pending: ${JSON.stringify(this.getStore(['config', 'api']))}`});

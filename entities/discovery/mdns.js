@@ -1,6 +1,5 @@
 const discovery = require('dns-discovery');
 const resolver = require('mdns-resolver').resolveSrv;
-const {getConfig} = require('../../utils');
 const jsonrpcClient = {
     http: require('../clients/jsonrpc/http'),
     udp: require('../clients/jsonrpc/udp')
@@ -10,7 +9,7 @@ module.exports = (Node) => {
     class ApiHttpDiscovery extends Node {
         constructor(...args) {
             super(...args);
-            var rcConf = getConfig(this.getNodeId(), ['resolve'], {
+            var rcConf = this.getConfig(['resolve'], {
                 // type, only for guessing
                 type: 'mdns',
                 // member of domain
@@ -32,9 +31,10 @@ module.exports = (Node) => {
                     logger: 'udp'
                 }
             });
-            var {domain, nodeName, map, destinationClients, ...discoveryOptions} = rcConf;
+            var {domain, name, map, destinationClients, ...discoveryOptions} = rcConf;
             this.destinationClients = destinationClients;
             this.resolveMap = map;
+            this.resolveName = name;
             this.domain = domain.split(',');
             this.discoveryOptions = discoveryOptions || {};
             this.cleanup = [];
@@ -48,8 +48,8 @@ module.exports = (Node) => {
                 .then((httpApi) => new Promise((resolve, reject) => {
                     this.domain.map((domain) => {
                         let disc = discovery({domain: `${domain}.local`, ...this.discoveryOptions});
-                        this.cleanup.push(() => Promise.resolve().then(() => disc.unannounce(this.getNodeId(), httpApi.port)).then(() => disc.destroy(() => 1)));
-                        disc.announce(this.getNodeId(), httpApi.port);
+                        this.cleanup.push(() => Promise.resolve().then(() => disc.unannounce(this.resolveName, httpApi.port)).then(() => disc.destroy(() => 1)));
+                        disc.announce(this.resolveName, httpApi.port);
                     });
                     resolve();
                 }))
