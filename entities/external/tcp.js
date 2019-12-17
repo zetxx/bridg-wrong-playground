@@ -81,6 +81,7 @@ module.exports = (Node) => {
         }
 
         async stop() {
+            await this.disconnect();
             return super.stop();
         }
 
@@ -152,9 +153,9 @@ module.exports = (Node) => {
         async externalOut({result, error, meta}) {
             this.log('trace', {in: 'tcp.externalOut', result, meta});
             if (error) {
-                this.socket.end(() => {
+                this.socket && this.socket.end(() => {
                     this.log('trace', {in: 'tcp.externalOut.socketClosed', error, meta});
-                    this.socket.destroy();
+                    this.socket && this.socket.destroy();
                 });
                 return this.log('error', {in: 'tcp.externalOut', error, meta});
             }
