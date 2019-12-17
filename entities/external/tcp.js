@@ -81,7 +81,10 @@ module.exports = (Node) => {
         }
 
         async stop() {
-            await this.disconnect();
+            if (this.connected && this.socket) {
+                this.socket.removeAllListeners();
+                await this.disconnect();
+            }
             return super.stop();
         }
 
