@@ -85,22 +85,23 @@ module.exports = (Node) => {
 
         async callApiMethod(requestData) {
             this.log('trace', {in: 'api.http.callApiMethod', msg: requestData});
-            try {
-                let {method, ...json} = JSON.parse(requestData);
-                let {id} = json;
-                let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
-                var ajv = new Ajv();
-                let validate = ajv.compile(validation);
-                let valid = validate({method, ...json});
-                if (!valid) {
-                    this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
-                    throw Object.create({id, error: validate.errors});
-                }
-                let msg = constructJsonrpcRequest({method, ...json});
-                return {id, result: await this.apiRequestReceived(msg)};
-            } catch (e) {
-                throw Object.create({id: undefined, error: e});
+            let {method, ...json} = JSON.parse(requestData);
+            let {id} = json;
+            let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
+            var ajv = new Ajv();
+            let validate = ajv.compile(validation);
+            let valid = validate({method, ...json});
+            if (!valid) {
+                this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
+                let err = new Error();
+                let valErr = new Error(validate.errors.map(({message}) => message).join('\n'));
+                err.id = id;
+                valErr.stack = JSON.stringify(validate.errors);
+                err.error = valErr;
+                throw err;
             }
+            let msg = constructJsonrpcRequest({method, ...json});
+            return {id, result: await this.apiRequestReceived(msg)};
         }
         registerApiMethod({method, direction = 'both', meta: {validation, cors, isNotification} = {}, fn}) {
             (['in', 'both'].indexOf(direction) >= 0) && this.apiRoutes.push({methodName: method, validation: validationGen({isNotification, method, params: validation || {}}), isNotification, cors});
