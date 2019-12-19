@@ -74,7 +74,7 @@ module.exports = (Node) => {
         }
 
         disconnect() {
-            this.log('info', {in: 'disconnect', description: 'connection initialization'});
+            this.log('info', {in: 'disconnect', description: 'disconnect'});
             return new Promise((resolve, reject) => {
                 return this.connected && this.socket.end();
             });
@@ -83,7 +83,7 @@ module.exports = (Node) => {
         async stop() {
             if (this.connected && this.socket) {
                 this.socket.removeAllListeners();
-                await this.disconnect();
+                this.disconnect();
             }
             return super.stop();
         }
