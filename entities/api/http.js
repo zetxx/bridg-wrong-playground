@@ -50,8 +50,9 @@ module.exports = (Node) => {
                                 res.writeHead(200);
                                 res.end(JSON.stringify(ret));
                                 this.log('info', {in: 'api.http.method', method, url, response: ret});
-                            } catch (e) {
-                                let {error, id} = e;
+                            } catch (error) {
+                                let {id} = error;
+                                delete error.id;
                                 res.writeHead(500);
                                 res.end(JSON.stringify({id, error: serializeError(error)}));
                             }
@@ -84,24 +85,27 @@ module.exports = (Node) => {
         }
 
         async callApiMethod(requestData) {
-            this.log('trace', {in: 'api.http.callApiMethod', msg: requestData});
-            let {method, ...json} = JSON.parse(requestData);
-            let {id} = json;
-            let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
-            var ajv = new Ajv();
-            let validate = ajv.compile(validation);
-            let valid = validate({method, ...json});
-            if (!valid) {
-                this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
-                let err = new Error();
-                let valErr = new Error(validate.errors.map(({message}) => message).join('\n'));
-                err.id = id;
-                valErr.stack = JSON.stringify(validate.errors);
-                err.error = valErr;
-                throw err;
+            let r;
+            let id;
+            try {
+                this.log('trace', {in: 'api.http.callApiMethod', msg: requestData});
+                let {method, ...json} = JSON.parse(requestData);
+                id = json.id;
+                let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
+                var ajv = new Ajv();
+                let validate = ajv.compile(validation);
+                let valid = validate({method, ...json});
+                if (!valid) {
+                    this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
+                    throw new Error(['ValidationError'].concat(validate.errors.map(JSON.stringify)).join('\n'));
+                }
+                let msg = constructJsonrpcRequest({method, ...json});
+                r = {id, result: await this.apiRequestReceived(msg)};
+            } catch (e) {
+                e.id = id;
+                throw e;
             }
-            let msg = constructJsonrpcRequest({method, ...json});
-            return {id, result: await this.apiRequestReceived(msg)};
+            return r;
         }
         registerApiMethod({method, direction = 'both', meta: {validation, cors, isNotification} = {}, fn}) {
             (['in', 'both'].indexOf(direction) >= 0) && this.apiRoutes.push({methodName: method, validation: validationGen({isNotification, method, params: validation || {}}), isNotification, cors});
