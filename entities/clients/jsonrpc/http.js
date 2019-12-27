@@ -36,13 +36,16 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                         }
                         resolved = true;
                         try {
+                            if (resp.statusCode !== 200) {
+                                throw new Error(`Http:${resp.statusCode}`);
+                            }
                             const rp = JSON.parse(dataCollection.toString());
                             if (rp.error) {
                                 return reject(rp.error);
                             }
                             return resolve(rp.result);
                         } catch (e) {
-                            return reject(rp.error);
+                            return reject(e);
                         }
                     });
                 });

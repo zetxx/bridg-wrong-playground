@@ -1,3 +1,4 @@
+const common = require('./index.js');
 const discovery = require('dns-discovery');
 const resolver = require('mdns-resolver').resolveSrv;
 const jsonrpcClient = {
@@ -6,7 +7,7 @@ const jsonrpcClient = {
 };
 
 module.exports = (Node) => {
-    class ApiHttpDiscovery extends Node {
+    class ApiHttpDiscovery extends common(Node) {
         constructor(...args) {
             super(...args);
             var rcConf = this.getConfig(['resolve'], {
@@ -100,13 +101,6 @@ module.exports = (Node) => {
                 this.log('info', {in: 'discovery.resolve', description: `resolved: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
                 return this.internalRemoteServices[sn].send;
             }
-        }
-
-        async remoteApiRequest({destination, message, meta}) {
-            var [nodeName, ...rest] = destination.split('.');
-            this.log('trace', {in: 'discovery.remoteApiRequest', description: `try to call micro-service: ${destination}`, destination, message, meta});
-            let request = await this.resolve(nodeName);
-            return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.getNodeId(), destination})});
         }
     }
     return ApiHttpDiscovery;

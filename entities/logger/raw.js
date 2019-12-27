@@ -1,3 +1,5 @@
+const {serializeError} = require('serialize-error');
+
 module.exports = (Node) => {
     return class Logger extends Node {
         constructor(...args) {
@@ -24,6 +26,9 @@ module.exports = (Node) => {
         async initLogger() {}
 
         async log(level, message) {
+            if (level === 'error') {
+                message.error = serializeError(message.error);
+            }
             this.logger[level]({...message, pid: this.getNodeId()});
         }
 

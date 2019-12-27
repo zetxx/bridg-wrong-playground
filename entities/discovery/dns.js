@@ -50,13 +50,6 @@ module.exports = (Node) => {
             }
             return this.internalRemoteServices[hostname].send;
         }
-
-        async remoteApiRequest({destination, message, meta}) {
-            var [nodeName, ...rest] = destination.split('.');
-            this.log('trace', {in: 'discovery.remoteApiRequest', destination, message, meta});
-            let request = await this.resolve(nodeName);
-            return request({method: rest.join('.'), params: (message || {}), meta: Object.assign({}, meta, {source: this.getNodeId(), destination})});
-        }
     }
     return ApiHttpDiscovery;
 };
