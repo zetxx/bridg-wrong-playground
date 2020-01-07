@@ -14,18 +14,19 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                 id: (!meta || meta.isNotification) ? 0 : intCounter++
             });
             var resolved = false;
+            let reqObj = {
+                protocol,
+                hostname,
+                port,
+                path: '/',
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    'content-length': Buffer.from(body, 'utf8').length
+                }
+            };
             var req = ((protocol === 'https:' && https) || http)
-                .request({
-                    protocol,
-                    hostname,
-                    port,
-                    path: '/',
-                    method: 'POST',
-                    headers: {
-                        'content-type': 'application/json',
-                        'content-length': body.length
-                    }
-                }, (resp) => {
+                .request(reqObj, (resp) => {
                     var dataCollection = Buffer.from([]);
                     resp.on('data', (data) => {
                         dataCollection = Buffer.concat([dataCollection, data]);
