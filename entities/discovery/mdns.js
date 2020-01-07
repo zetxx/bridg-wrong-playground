@@ -82,7 +82,7 @@ module.exports = (Node) => {
                     } catch (error) {
                         this.internalRemoteServices[sn].resolveResult = 'error';
                         this.internalRemoteServices[sn].error = error;
-                        this.log('error', {in: 'discovery.resolve', description: `cannot resolve: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`, args: {error}});
+                        this.log('error', {in: 'discovery.resolve', description: `can't resolve: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`, error});
                         throw error;
                     }
                 }, {});

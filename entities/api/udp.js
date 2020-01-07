@@ -24,10 +24,10 @@ module.exports = (Node) => {
             await (new Promise((resolve, reject) => {
                 this.apiUdpServer = udp;
                 this.apiUdpServer.on('listening', () => {
-                    this.log('trace', {in: 'api.udp.on.listening', args: {config: this.getStore(['config', 'api'])}});
+                    this.log('trace', {in: 'api.udp.on.listening', config: this.getStore(['config', 'api'])});
                     resolve();
                 });
-                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'api.udp.on.error', description: 'udp server error', args: {error}}));
+                this.apiUdpServer.on('error', (error) => this.log('error', {in: 'api.udp.on.error', description: 'udp server error', error}));
                 this.apiUdpServer.on('message', async(buf, rinfo) => {
                     this.log('info', {in: 'api.udp.on.message', request: buf});
                     var r = {};
@@ -44,7 +44,7 @@ module.exports = (Node) => {
                         this.log('info', {in: 'api.udp.on.message', response: response});
                         return {id, result: response};
                     } catch (e) {
-                        this.log('error', {in: 'api.udp.on.message', args: {s, error: e}});
+                        this.log('error', {in: 'api.udp.on.message', message: s, error: e});
                     }
                 });
                 this.apiUdpServer.bind(this.getStore(['config', 'api']));
