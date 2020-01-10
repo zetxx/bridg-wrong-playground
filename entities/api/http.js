@@ -92,6 +92,9 @@ module.exports = (Node) => {
                 let {method, ...json} = JSON.parse(requestData);
                 id = json.id;
                 let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
+                if (!validation) {
+                    throw new Error('MissingValidation');
+                }
                 var ajv = new Ajv();
                 let validate = ajv.compile(validation);
                 let valid = validate({method, ...json});
