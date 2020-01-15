@@ -16,7 +16,8 @@
         "uuid": "*",
         "pg": "*",
         "serialize-error": "*",
-        "bridg-wrong": "*"
+        "bridg-wrong": "*",
+        "flat": "*"
     },
     "devDependencies": {
         "why-is-node-running": "*",

@@ -1,3 +1,5 @@
+const flatten = require('flat');
+
 const CreateError = (code, parentError) => {
     class CustomError extends (parentError || Error) {
         constructor({message, state} = {message: '', state: null}, ...params) {
@@ -6,7 +8,7 @@ const CreateError = (code, parentError) => {
             Error.captureStackTrace && Error.captureStackTrace(this, CustomError);
 
             this.code = (this.code && [this.code, code].join('.')) || code;
-            this.state = state;
+            this.state = flatten(state);
         }
     }
     return CustomError;
