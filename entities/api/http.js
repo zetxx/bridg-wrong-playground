@@ -5,7 +5,8 @@ const {constructJsonrpcRequest} = require('../../utils');
 const {serializeError} = require('serialize-error');
 const CustomError = require('../../error');
 
-const ValidationError = CustomError({code: 'ValidationError'});
+const Validation = CustomError({code: 'Validation'});
+const MissingValidation = CustomError({code: 'missing', parent: Validation});
 
 // https://npm.runkit.com/ajv
 const validationGen = ({params = {}, isNotification = 0, method = 'dummy.method'} = {}) => {
@@ -55,7 +56,6 @@ module.exports = (Node) => {
                                 this.log('info', {in: 'api.http.method', method, url, response: ret});
                             } catch (error) {
                                 let {id} = error;
-                                delete error.id;
                                 res.writeHead(500);
                                 res.end(JSON.stringify({id, error: serializeError(error)}));
                             }
@@ -96,19 +96,18 @@ module.exports = (Node) => {
                 id = json.id;
                 let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
                 if (!validation) {
-                    throw new Error('MissingValidation');
+                    throw new MissingValidation(`missing validation for ${method}`, {id, state: {method, json}});
                 }
                 var ajv = new Ajv();
                 let validate = ajv.compile(validation);
                 let valid = validate({method, ...json});
                 if (!valid) {
                     this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
-                    throw new ValidationError({state: validate.errors});
+                    throw new Validation('Validation', {id, state: {errors: validate.errors, method, json}});
                 }
                 let msg = constructJsonrpcRequest({method, ...json});
                 r = {id, result: await this.apiRequestReceived(msg)};
             } catch (e) {
-                e.id = id;
                 throw e;
             }
             return r;
