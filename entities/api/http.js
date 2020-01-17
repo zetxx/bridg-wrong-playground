@@ -3,10 +3,7 @@ var Ajv = require('ajv');
 // var conv = require('joi-to-json-schema');
 const {constructJsonrpcRequest} = require('../../utils');
 const {serializeError} = require('serialize-error');
-const CustomError = require('../../error');
-
-const Validation = CustomError({code: 'Validation'});
-const MissingValidation = CustomError({code: 'missing', parent: Validation});
+const errors = require('./errors');
 
 // https://npm.runkit.com/ajv
 const validationGen = ({params = {}, isNotification = 0, method = 'dummy.method'} = {}) => {
@@ -96,14 +93,14 @@ module.exports = (Node) => {
                 id = json.id;
                 let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
                 if (!validation) {
-                    throw new MissingValidation(`missing validation for ${method}`, {id, state: {method, json}});
+                    throw new errors.MissingValidation(`missing validation for ${method}`, {id, state: {method, json}});
                 }
                 var ajv = new Ajv();
                 let validate = ajv.compile(validation);
                 let valid = validate({method, ...json});
                 if (!valid) {
                     this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
-                    throw new Validation('Validation', {id, state: {errors: validate.errors, method, json}});
+                    throw new errors.Validation('Validation', {id, state: {errors: validate.errors, method, json}});
                 }
                 let msg = constructJsonrpcRequest({method, ...json});
                 r = {id, result: await this.apiRequestReceived(msg)};
