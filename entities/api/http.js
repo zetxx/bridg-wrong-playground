@@ -3,6 +3,9 @@ var Ajv = require('ajv');
 // var conv = require('joi-to-json-schema');
 const {constructJsonrpcRequest} = require('../../utils');
 const {serializeError} = require('serialize-error');
+const CustomError = require('../../error');
+
+const ValidationError = CustomError({code: 'ValidationError'});
 
 // https://npm.runkit.com/ajv
 const validationGen = ({params = {}, isNotification = 0, method = 'dummy.method'} = {}) => {
@@ -100,7 +103,7 @@ module.exports = (Node) => {
                 let valid = validate({method, ...json});
                 if (!valid) {
                     this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
-                    throw new Error(['ValidationError'].concat(validate.errors.map(JSON.stringify)).join('\n'));
+                    throw new ValidationError({state: validate.errors});
                 }
                 let msg = constructJsonrpcRequest({method, ...json});
                 r = {id, result: await this.apiRequestReceived(msg)};
