@@ -2,7 +2,7 @@ const http = require('http');
 const https = require('https');
 const errors = require('./errors');
 
-module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
+module.exports = ({remote, listen}) => {
     var intCounter = 1;
 
     return {
@@ -16,9 +16,9 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
             });
             var resolved = false;
             let reqObj = {
-                protocol,
-                hostname,
-                port,
+                protocol: (remote.tunnel && 'https:') || 'http:',
+                hostname: remote.host,
+                port: remote.port,
                 path: '/',
                 method: 'POST',
                 headers: {
@@ -26,7 +26,7 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                     'content-length': Buffer.from(body, 'utf8').length
                 }
             };
-            var req = ((protocol === 'https:' && https) || http)
+            var req = ((remote.tunnel && https) || http)
                 .request(reqObj, (resp) => {
                     var dataCollection = Buffer.from([]);
                     resp.on('data', (data) => {

@@ -1,13 +1,10 @@
 const common = require('./index.js');
 const discovery = require('dns-discovery');
 const resolver = require('mdns-resolver').resolveSrv;
-const jsonrpcClient = {
-    http: require('../clients/jsonrpc/http'),
-    udp: require('../clients/jsonrpc/udp')
-};
+const jsonrpcClients = require('../clients/jsonrpc');
 
 module.exports = (Node) => {
-    class ApiHttpDiscovery extends common(Node) {
+    class ApiHttpDiscovery extends jsonrpcClients(common(Node)) {
         constructor(...args) {
             super(...args);
             var rcConf = this.getConfig(['resolve'], {
@@ -25,11 +22,6 @@ module.exports = (Node) => {
                 // we should put in map.logger = 'abc-logger'
                 map: {
                     logger: 'logger'
-                },
-                // how to connect to internal destination: destinationName: proto
-                // proto: http/udp
-                destinationClients: {
-                    logger: 'udp'
                 }
             });
             var {domain, name, map, destinationClients, ...discoveryOptions} = rcConf;
@@ -65,24 +57,23 @@ module.exports = (Node) => {
 
         async resolve(serviceName, apiClient) {
             var sn = this.resolveMap[serviceName] || serviceName;
-            apiClient = apiClient || this.destinationClients[serviceName];
-            this.log('info', {in: 'discovery.resolve.1', description: `try to resolve: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
+            this.log('info', {in: 'discovery.resolve.1', description: `try to resolve: ${serviceName}[${sn}]`});
             if (!this.internalRemoteServices[sn]) {
                 this.internalRemoteServices[sn] = {resolveResult: 'pending'};
                 return this.domain.reduce(async(p, domain) => {
                     try {
                         this.internalRemoteServices[sn].resolver = resolver(`${sn}.${domain}.local`);
                         this.internalRemoteServices[sn].result = await this.internalRemoteServices[sn].resolver;
-                        this.log('info', {in: 'discovery.resolve.2', description: `resolved: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
+                        this.log('info', {in: 'discovery.resolve.2', description: `resolved: ${serviceName}[${sn}]`});
                         this.internalRemoteServices[sn].resolveResult = 'ok';
                         let port = this.internalRemoteServices[sn].result.port;
                         let host = this.internalRemoteServices[sn].result.target.replace('0.0.0.0', '127.0.0.1');
-                        this.internalRemoteServices[sn] = {...this.internalRemoteServices[sn], ...jsonrpcClient[apiClient || 'http']({hostname: host, port})};
+                        this.internalRemoteServices[sn] = {...this.internalRemoteServices[sn], ...this.getClient(serviceName, {remote: {host, port}})};
                         return this.internalRemoteServices[sn].send;
                     } catch (error) {
                         this.internalRemoteServices[sn].resolveResult = 'error';
                         this.internalRemoteServices[sn].error = error;
-                        this.log('error', {in: 'discovery.resolve.error.1', description: `can't resolve: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`, error});
+                        this.log('error', {in: 'discovery.resolve.error.1', description: `can't resolve: ${serviceName}[${sn}]`, error});
                         throw error;
                     }
                 }, {});
@@ -91,14 +82,14 @@ module.exports = (Node) => {
                     await this.internalRemoteServices[sn].resolver;
                     return this.internalRemoteServices[sn].send;
                 } catch (error) {
-                    this.log('error', {in: 'discovery.resolve.error.2', destination: sn, apiClient, error});
+                    this.log('error', {in: 'discovery.resolve.error.2', destination: sn, error});
                 }
             } else if (this.internalRemoteServices[sn].resolveResult === 'error') {
-                this.log('error', {in: 'discovery.resolve.error.3', destination: sn, apiClient, error: this.internalRemoteServices[sn].error});
+                this.log('error', {in: 'discovery.resolve.error.3', destination: sn, error: this.internalRemoteServices[sn].error});
                 this.internalRemoteServices[sn] = undefined;
                 return this.resolve(serviceName, apiClient);
             } else if (this.internalRemoteServices[sn].resolveResult === 'ok') {
-                this.log('info', {in: 'discovery.resolve.3', description: `resolved: ${serviceName}[${sn}] with api client: ${apiClient || 'http'}`});
+                this.log('info', {in: 'discovery.resolve.3', description: `resolved: ${serviceName}[${sn}]'}`});
                 return this.internalRemoteServices[sn].send;
             }
         }
