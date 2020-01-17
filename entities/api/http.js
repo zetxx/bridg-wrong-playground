@@ -1,26 +1,9 @@
 const http = require('http');
-var Ajv = require('ajv');
-// var conv = require('joi-to-json-schema');
-const {constructJsonrpcRequest} = require('../../utils');
 const {serializeError} = require('serialize-error');
-const errors = require('./errors');
-
-// https://npm.runkit.com/ajv
-const validationGen = ({params = {}, isNotification = 0, method = 'dummy.method'} = {}) => {
-    return {
-        required: ['jsonrpc', 'method', 'params'],
-        properties: {
-            jsonrpc: {type: 'string', const: '2.0'},
-            id: {type: 'integer', ...((isNotification && {maximum: 0}) || {minimum: 1})},
-            meta: {type: 'object'},
-            method: {type: 'string', const: method},
-            params
-        }
-    };
-};
+const Api = require('./main');
 
 module.exports = (Node) => {
-    class ApiHttp extends Node {
+    class ApiHttp extends Api(Node) {
         constructor(...args) {
             super(...args);
             this.apiRoutes = [];
@@ -84,48 +67,6 @@ module.exports = (Node) => {
             });
         }
 
-        async callApiMethod(requestData) {
-            let r;
-            let id;
-            try {
-                this.log('trace', {in: 'api.http.callApiMethod', msg: requestData});
-                let {method, ...json} = JSON.parse(requestData);
-                id = json.id;
-                let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
-                if (!validation) {
-                    throw new errors.MissingValidation(`missing validation for ${method}`, {id, state: {method, json}});
-                }
-                var ajv = new Ajv();
-                let validate = ajv.compile(validation);
-                let valid = validate({method, ...json});
-                if (!valid) {
-                    this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
-                    throw new errors.Validation('Validation', {id, state: {errors: validate.errors, method, json}});
-                }
-                let msg = constructJsonrpcRequest({method, ...json});
-                r = {id, result: await this.apiRequestReceived(msg)};
-            } catch (e) {
-                throw e;
-            }
-            return r;
-        }
-        registerApiMethod({method, direction = 'both', meta: {validation, cors, isNotification} = {}, fn}) {
-            (['in', 'both'].indexOf(direction) >= 0) && this.apiRoutes.push({methodName: method, validation: validationGen({isNotification, method, params: validation || {}}), isNotification, cors});
-            var directions = [];
-            if (direction === 'both') {
-                directions = ['in', 'out'];
-            } else {
-                directions = [direction];
-            }
-            directions.map((direction) => super.registerApiMethod({method: [method, direction].join('.'), fn}));
-        }
-        registerApiMethods(list = []) {
-            list.map((item) => this.registerApiMethod(item));
-        }
-
-        registerExternalMethods(list = []) {
-            list.map((item) => this.registerExternalMethod(item));
-        }
         async stop() {
             this.log('info', {in: 'api.http.stop', description: `stopping: ${JSON.stringify(this.getStore(['config', 'api']))}`});
             await this.httpApiServer.close({timeout: 2000});

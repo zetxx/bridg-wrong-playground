@@ -1,9 +1,10 @@
 const dgram = require('dgram');
 const udp = dgram.createSocket('udp4');
-const {constructJsonrpcRequest} = require('../../utils');
+const Api = require('./main');
+const {serializeError} = require('serialize-error');
 
 module.exports = (Node) => {
-    class ApiUdp extends Node {
+    class ApiUdp extends Api(Node) {
         constructor(...args) {
             super(...args);
             this.apiRoutes = [];
@@ -30,21 +31,14 @@ module.exports = (Node) => {
                 this.apiUdpServer.on('error', (error) => this.log('error', {in: 'api.udp.on.error', description: 'udp server error', error}));
                 this.apiUdpServer.on('message', async(buf, rinfo) => {
                     this.log('info', {in: 'api.udp.on.message', request: buf});
-                    var r = {};
                     var s = buf.toString('utf8');
                     try {
-                        r = JSON.parse(s);
-                    } catch (e) {
-                        this.log('error', {in: 'api.udp.on.message', s, error: e});
-                    }
-                    let {id} = r;
-                    let msg = constructJsonrpcRequest(r);
-                    try {
-                        let {response = {id}} = await this.apiRequestReceived(msg);
-                        this.log('info', {in: 'api.udp.on.message', response: response});
-                        return {id, result: response};
-                    } catch (e) {
-                        this.log('error', {in: 'api.udp.on.message', message: s, error: e});
+                        let result = await this.callApiMethod(s);
+                        return rinfo.port && rinfo.address && this.respond(result, rinfo);
+                    } catch (error) {
+                        let {id} = error;
+                        this.log('error', {in: 'api.udp.on.message', s, error});
+                        return rinfo.port && rinfo.address && this.respond({id, error: serializeError(error)}, rinfo);
                     }
                 });
                 this.apiUdpServer.bind(this.getStore(['config', 'api']));
@@ -53,10 +47,14 @@ module.exports = (Node) => {
             return this.getStore(['config', 'api']);
         }
 
-        registerApiMethod({method, direction, fn}) {
-            direction === 'in' && this.apiRoutes.push({methodName: method});
-            super.registerApiMethod({method: [method, direction].join('.'), fn});
+        respond(response, rinfo) {
+            let client = dgram.createSocket('udp4');
+            client.send(Buffer.from(JSON.stringify(response), 'utf8'), rinfo.port, rinfo.address, () => {
+                this.log('trace', {in: 'api.udp.response.sent'});
+                client.close();
+            });
         }
+
         async stop() {
             this.apiUdpServer && this.apiUdpServer.close(() => (this.apiUdpServer = null));
             return super.stop();
