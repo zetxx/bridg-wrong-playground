@@ -1,5 +1,6 @@
 const http = require('http');
 const https = require('https');
+const errors = require('./errors');
 
 module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
     var intCounter = 1;
@@ -38,7 +39,7 @@ module.exports = ({protocol = 'http:', hostname = 'localhost', port = 80}) => {
                         resolved = true;
                         try {
                             if (resp.statusCode !== 200) {
-                                throw new Error(`Http:${resp.statusCode}`);
+                                throw new errors.Http(resp.statusCode);
                             }
                             const rp = JSON.parse(dataCollection.toString());
                             if (rp.error) {
