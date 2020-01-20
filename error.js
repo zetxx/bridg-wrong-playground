@@ -9,8 +9,11 @@ const CreateError = ({code, parent, message}) => {
             Error.captureStackTrace && Error.captureStackTrace(this, CustomError);
 
             this.code = (this.code && [this.code, code].join('.')) || code;
-            state && (this.state = flatten(state));
+            this.setState(state);
             id && (this.id = id);
+        }
+        setState(state) {
+            state && (this.state = {...(this.state || {}), ...flatten(state)});
         }
     }
     return CustomError;

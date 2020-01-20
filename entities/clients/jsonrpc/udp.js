@@ -12,23 +12,21 @@ const getCircularReplacer = () => {
     };
 };
 
-module.exports = ({remote, listen, responseTimeout}) => {
+module.exports = ({remote, listen, timeout}, log) => {
     var intCounter = 1;
     var client = dgram.createSocket('udp4');
-    if (listen && listen.port) {
-        client.on('message', (msg, rinfo) => {
-            let {id, ...rest} = JSON.parse(msg.toString('utf8'));
-            respondAndRemoveFromQueue(id, ({resolve, timeoutId}) => {
-                clearTimeout(timeoutId);
-                return resolve({id, ...rest});
-            });
+    client.on('message', (msg, rinfo) => {
+        let {id, ...rest} = JSON.parse(msg.toString('utf8'));
+        respondAndRemoveFromQueue(id, ({resolve}) => {
+            return resolve({id, ...rest});
         });
-        client.bind(listen.port);
-    }
+    });
     var queue = [];
     const respondAndRemoveFromQueue = (id, cb) => {
         let idx = queue.findIndex(({qId}) => id === qId);
-        cb(queue.slice(idx, 1).pop());
+        let {timeoutId, qId, ...rest} = queue.slice(idx, 1).pop();
+        clearTimeout(timeoutId);
+        cb(rest);
         queue = queue.slice(0, idx).concat(queue.slice(idx + 1));
     };
     var closed = false;
@@ -51,7 +49,7 @@ module.exports = ({remote, listen, responseTimeout}) => {
             try {
                 !closed && client.send(messageBuffer, 0, messageBuffer.length, remote.port, remote.host, (err, bytes) => {
                     if (err) {
-                        console.error(err, {remote, method, message, ...rest, meta});
+                        log('error', {in: 'client.udp.request.response', error: err, remote, method, message, ...rest, meta});
                     } else {
                         if (preparedMessage.id) {
                             let qId = preparedMessage.id;
@@ -60,8 +58,8 @@ module.exports = ({remote, listen, responseTimeout}) => {
                                 respondAndRemoveFromQueue(qId, ({reject}) => {
                                     return reject(new Error('timeout'));
                                 });
-                                console.error(err, {remote, method, message, ...rest, meta});
-                            }, responseTimeout); // todo timeout in config
+                                log('error', {in: 'client.udp.request.response.timedOut', error: err, remote, method, message, ...rest, meta});
+                            }, timeout);
                             queue.push({qId, resolve, reject, timeoutId});
                         } else {
                             resolve({});
@@ -69,10 +67,11 @@ module.exports = ({remote, listen, responseTimeout}) => {
                     }
                 });
             } catch (e) {
-                console.error(e);
+                log('error', {in: 'client.udp.request.response.timedOut', error: e, remote, method, message, ...rest, meta});
             }
         })),
         destroy: () => {
+            queue.map(({qId}) => respondAndRemoveFromQueue(qId, ({reject}) => reject(new Error('forceDestroy'))));
             return !closed && client.close(() => (closed = true));
         }
     };

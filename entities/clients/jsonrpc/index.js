@@ -16,7 +16,7 @@ module.exports = (Node) => {
                 this.serviceConfigCache[client] = this.getConfig(['internalServiceClient', client], {
                     // how to connect to internal destination: destinationName: proto
                     proto: 'http',
-                    responseTimeout: 10000,
+                    timeout: 120000,
                     // used in udp
                     listen: (props && props.listen) || {
                         host: false,
@@ -36,7 +36,7 @@ module.exports = (Node) => {
         getClient(client, props) {
             if (!this.remoteClients[client]) {
                 let config = this.getClientConfig(client, props);
-                this.remoteClients[client] = clients[config.proto](config);
+                this.remoteClients[client] = clients[config.proto](config, (...args) => this.log(...args));
             }
             return this.remoteClients[client];
         }

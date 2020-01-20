@@ -30,7 +30,7 @@ module.exports = (Node) => {
                 });
                 this.apiUdpServer.on('error', (error) => this.log('error', {in: 'api.udp.on.error', description: 'udp server error', error}));
                 this.apiUdpServer.on('message', async(buf, rinfo) => {
-                    this.log('info', {in: 'api.udp.on.message', request: buf});
+                    this.log('info', {in: 'api.udp.on.message', request: buf, remote: rinfo});
                     var s = buf.toString('utf8');
                     try {
                         let result = await this.callApiMethod(s);
@@ -49,6 +49,7 @@ module.exports = (Node) => {
 
         respond(response, rinfo) {
             let client = dgram.createSocket('udp4');
+            this.log('info', {in: 'api.udp.on.message.respond', response, remote: rinfo});
             client.send(Buffer.from(JSON.stringify(response), 'utf8'), rinfo.port, rinfo.address, () => {
                 this.log('trace', {in: 'api.udp.response.sent'});
                 client.close();

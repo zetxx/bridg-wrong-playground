@@ -2,7 +2,7 @@ const http = require('http');
 const https = require('https');
 const errors = require('./errors');
 
-module.exports = ({remote, listen}) => {
+module.exports = ({remote, listen, timeout}, log) => {
     var intCounter = 1;
 
     return {
@@ -19,6 +19,7 @@ module.exports = ({remote, listen}) => {
                 protocol: (remote.tunnel && 'https:') || 'http:',
                 hostname: remote.host,
                 port: remote.port,
+                timeout,
                 path: '/',
                 method: 'POST',
                 headers: {
@@ -53,8 +54,7 @@ module.exports = ({remote, listen}) => {
                 });
 
             req.on('error', (err) => {
-                err.httpClientError = true;
-                err.requestData = JSON.stringify({method, params, meta});
+                err.setState && err.setState({method, params, meta});
                 !resolved && reject(err);
                 resolved = true;
             });
