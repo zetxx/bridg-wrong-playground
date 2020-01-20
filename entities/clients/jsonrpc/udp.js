@@ -17,14 +17,15 @@ module.exports = ({remote, listen, timeout}, log) => {
     var client = dgram.createSocket('udp4');
     client.on('message', (msg, rinfo) => {
         let {id, ...rest} = JSON.parse(msg.toString('utf8'));
-        respondAndRemoveFromQueue(id, ({resolve}) => {
+        id && respondAndRemoveFromQueue(id, ({resolve}) => {
             return resolve({id, ...rest});
         });
     });
     var queue = [];
     const respondAndRemoveFromQueue = (id, cb) => {
         let idx = queue.findIndex(({qId}) => id === qId);
-        let {timeoutId, qId, ...rest} = queue.slice(idx, 1).pop();
+        let rq = queue.slice(idx, 1).pop();
+        let {timeoutId, qId, ...rest} = rq;
         clearTimeout(timeoutId);
         cb(rest);
         queue = queue.slice(0, idx).concat(queue.slice(idx + 1));

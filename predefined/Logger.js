@@ -47,6 +47,9 @@ class Logger extends Service {
         this.registerApiMethod({
             method: 'log',
             direction: 'in',
+            meta: {
+                isNotification: 1
+            },
             fn: function({level = 'info', fingerPrint, ...rest}) {
                 let destinations = this.getState(['config', 'log', 'destinations']);
                 destinations = ((destinations instanceof Array) && destinations) || (destinations && [destinations]);
