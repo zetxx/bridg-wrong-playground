@@ -10,6 +10,10 @@ module.exports = (Node) => {
             });
             return s;
         }
+        stop() {
+            this.stopping = true;
+            super.stop();
+        }
     }
     return Last;
 };

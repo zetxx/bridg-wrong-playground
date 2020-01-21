@@ -19,6 +19,7 @@ module.exports = ({getConfig}) => (Node) => {
         } = {}) {
             super(rest);
             nodeId = id;
+            this.stopping = false;
         }
 
         getNodeId() {
