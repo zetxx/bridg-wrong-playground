@@ -6,7 +6,7 @@ const First = require('./entities/first');
 const Last = require('./entities/last');
 
 const execOrder = [
-    'api', 'discovery', 'logger', 'service', 'external'
+    'api', 'discovery', 'log', 'service', 'external'
 ];
 
 // creates object based on path given and innerValue

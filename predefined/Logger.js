@@ -7,17 +7,17 @@ class Logger extends Service {
     constructor(args) {
         super(args);
         this.setStore(
-            ['config', 'log'],
-            this.getConfig(['log'], {
+            ['config', 'logger'],
+            this.getConfig(['logger'], {
                 level: 'trace',
-                logOwn: false, // see logger/net
+                logOwn: false,
                 destinations: [], // to were to send incoming requests
-                stdout: true // see logger/net
+                stdout: true
             })
         );
         this.logger = require('pino')({
             prettyPrint: {colorize: true},
-            level: this.getStore(['config', 'log', 'level'])
+            level: this.getStore(['config', 'logger', 'level'])
         });
     }
 
@@ -26,13 +26,13 @@ class Logger extends Service {
     }
 
     log(level, {logExternal, ...message}) {
-        let logOwn = this.getStore(['config', 'log', 'logOwn']);
+        let logOwn = this.getStore(['config', 'logger', 'logOwn']);
         // log only if logExternal is true
         if (!logOwn && !logExternal) {
             return null;
         }
         var lvl = level || 'info';
-        let stdout = this.getStore(['config', 'log', 'stdout']);
+        let stdout = this.getStore(['config', 'logger', 'stdout']);
         if (message.error) {
             message.error = serializeError(message.error);
         }
@@ -51,7 +51,7 @@ class Logger extends Service {
                 isNotification: 1
             },
             fn: function({level = 'info', fingerPrint, ...rest}) {
-                let destinations = this.getState(['config', 'log', 'destinations']);
+                let destinations = this.getState(['config', 'logger', 'destinations']);
                 destinations = ((destinations instanceof Array) && destinations) || (destinations && [destinations]);
                 try {
                     // set logExternal to true so everything that comes from wire will be logged
