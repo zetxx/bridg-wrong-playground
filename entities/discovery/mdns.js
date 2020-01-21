@@ -41,6 +41,7 @@ module.exports = (Node) => {
                 .then((httpApi) => new Promise((resolve, reject) => {
                     this.domain.map((domain) => {
                         let disc = discovery({domain: `${domain}.local`, ...this.discoveryOptions});
+                        this.log('info', {in: 'discovery.announce', domain});
                         this.cleanup.push(() => Promise.resolve().then(() => disc.unannounce(this.resolveName, httpApi.port)).then(() => disc.destroy(() => 1)));
                         disc.announce(this.resolveName, httpApi.port);
                     });
