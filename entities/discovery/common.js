@@ -1,10 +1,9 @@
-const errors = require('./errors');
-
 module.exports = (Node) => {
     class ApiDiscovery extends Node {
         async remoteApiRequest({destination, message, meta}) {
             if (this.stopping) {
-                throw new errors.Discovery('stopping process in progress!');
+                this.log('warn', {in: 'discovery.remoteApiRequest', description: 'stopping process in progress! message will not be sent', destination, message, meta});
+                return undefined;
             }
             var [nodeName, ...rest] = destination.split('.');
             this.log('info', {in: 'discovery.remoteApiRequest', description: `try to call micro-service: ${destination}`, destination, message, meta});
