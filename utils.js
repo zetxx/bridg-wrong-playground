@@ -18,7 +18,7 @@ const arr2obj = (arr, innerValue) => {
 };
 
 module.exports = {
-    throwOrReturn: function({result, error}) {
+    throwOrReturn: function({result, error} = {}) {
         if (error) {
             throw error;
         }
