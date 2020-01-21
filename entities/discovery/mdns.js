@@ -1,4 +1,4 @@
-const common = require('./index.js');
+const common = require('./common');
 const discovery = require('dns-discovery');
 const resolver = require('mdns-resolver').resolveSrv;
 const jsonrpcClients = require('../clients/jsonrpc');
@@ -7,7 +7,7 @@ module.exports = (Node) => {
     class ApiHttpDiscovery extends jsonrpcClients(common(Node)) {
         constructor(...args) {
             super(...args);
-            var rcConf = this.getConfig(['resolve'], {
+            var rcConf = this.getConfig(['discovery'], {
                 // type, only for guessing
                 type: 'mdns',
                 // member of domain

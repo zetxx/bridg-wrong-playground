@@ -1,13 +1,11 @@
-const jsonrpcClient = {
-    http: require('../clients/jsonrpc/http'),
-    udp: require('../clients/jsonrpc/udp')
-};
+const common = require('./common');
+const jsonrpcClients = require('../clients/jsonrpc');
 
 module.exports = (Node) => {
-    class ApiHttpDiscovery extends Node {
+    class ApiHttpDiscovery extends jsonrpcClients(common(Node)) {
         constructor(...args) {
             super(...args);
-            var rcConf = this.getConfig(['resolve'], {
+            var rcConf = this.getConfig(['discovery'], {
                 // map destination name to new name
                 map: {
                     logger: 'logger'
@@ -45,7 +43,7 @@ module.exports = (Node) => {
             apiClient = apiClient || this.destinationClients[serviceName];
             this.log('info', {in: 'discovery.resolve', serviceName, apiClient, hostname, globalPort: this.globalPort});
             if (!this.internalRemoteServices[hostname]) {
-                this.internalRemoteServices[hostname] = jsonrpcClient[apiClient || 'http']({hostname, port: this.globalPort});
+                this.internalRemoteServices[hostname] = this.getClient(serviceName, {remote: {host: hostname, port: this.globalPort}});
                 return this.internalRemoteServices[hostname].send;
             }
             return this.internalRemoteServices[hostname].send;
