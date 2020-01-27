@@ -150,6 +150,7 @@ module.exports = (Node) => {
                 return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId: (globTraceId || {id: uuid(), count: 1}), apiRequestId}});
             } catch (error) {
                 this.log('error', {in: 'tcp.externalIn', error});
+                throw error;
             }
         }
 
