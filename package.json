@@ -17,7 +17,8 @@
         "pg": "*",
         "serialize-error": "*",
         "bridg-wrong": "*",
-        "flat": "*"
+        "flat": "*",
+        "@elastic/elasticsearch": "*"
     },
     "devDependencies": {
         "why-is-node-running": "*",
@@ -28,5 +29,5 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/zetxx/bridg-wrong-playground.git"
-      }
+    }
 }
