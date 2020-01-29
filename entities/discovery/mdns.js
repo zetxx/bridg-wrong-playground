@@ -23,14 +23,14 @@ module.exports = (Node) => {
                 map: {
                     logger: 'logger'
                 },
-                resolveMap: { // if we want to resolve name by ourself :)
-                    // logger: '192.168.128.255' // ;)
+                resolvingMap: { // if we want to resolve name by ourself :)
+                    // logger: {host: '192.168.128.255', port: '123123'} // ;)
                 }
             });
-            var {domain, name, map, destinationClients, resolveMap, ...discoveryOptions} = rcConf;
+            var {domain, name, map, destinationClients, resolvingMap, ...discoveryOptions} = rcConf;
             this.destinationClients = destinationClients;
             this.resolveMap = map;
-            this.resolveMap = resolveMap;
+            this.resolvingMap = resolvingMap;
             this.resolveName = name;
             this.domain = domain.split(',');
             this.discoveryOptions = discoveryOptions || {};
@@ -67,7 +67,7 @@ module.exports = (Node) => {
                 this.internalRemoteServices[sn] = {resolveResult: 'pending'};
                 return this.domain.reduce(async(p, domain) => {
                     try {
-                        this.internalRemoteServices[sn].resolver = (this.resolveMap[sn] && Promise.resolve(this.resolveMap[sn])) || resolver(`${sn}.${domain}.local`);
+                        this.internalRemoteServices[sn].resolver = (this.resolvingMap[sn] && Promise.resolve(this.resolvingMap[sn])) || resolver(`${sn}.${domain}.local`);
                         this.internalRemoteServices[sn].result = await this.internalRemoteServices[sn].resolver;
                         this.log('info', {in: 'discovery.resolve.2', description: `resolved: ${serviceName}[${sn}]`});
                         this.internalRemoteServices[sn].resolveResult = 'ok';
