@@ -20,13 +20,20 @@ module.exports = (Node) => {
                 // map destination name to new name
                 // for instance if we want to resolve logger as abc-logger
                 // we should put in map.logger = 'abc-logger'
-                map: {
+                nameMap: {
                     logger: 'logger'
+                },
+                resolveMap: { // if we want to resolve name by ourself :), something like hosts file
+                    // logger: {
+                    //     target: '192.168.128.255',
+                    //     port: '123123'
+                    // } // ;)
                 }
             });
-            var {domain, name, map, destinationClients, ...discoveryOptions} = rcConf;
+            var {domain, name, nameMap, destinationClients, resolveMap, ...discoveryOptions} = rcConf;
             this.destinationClients = destinationClients;
-            this.resolveMap = map;
+            this.nameMap = nameMap;
+            this.resolveMap = resolveMap;
             this.resolveName = name;
             this.domain = domain.split(',');
             this.discoveryOptions = discoveryOptions || {};
@@ -57,13 +64,13 @@ module.exports = (Node) => {
         }
 
         async resolve(serviceName, apiClient) {
-            var sn = this.resolveMap[serviceName] || serviceName;
+            var sn = this.nameMap[serviceName] || serviceName;
             this.log('info', {in: 'discovery.resolve.1', description: `try to resolve: ${serviceName}[${sn}]`});
             if (!this.internalRemoteServices[sn]) {
                 this.internalRemoteServices[sn] = {resolveResult: 'pending'};
                 return this.domain.reduce(async(p, domain) => {
                     try {
-                        this.internalRemoteServices[sn].resolver = resolver(`${sn}.${domain}.local`);
+                        this.internalRemoteServices[sn].resolver = (this.resolveMap[sn] && Promise.resolve(this.resolveMap[sn])) || resolver(`${sn}.${domain}.local`);
                         this.internalRemoteServices[sn].result = await this.internalRemoteServices[sn].resolver;
                         this.log('info', {in: 'discovery.resolve.2', description: `resolved: ${serviceName}[${sn}]`});
                         this.internalRemoteServices[sn].resolveResult = 'ok';
