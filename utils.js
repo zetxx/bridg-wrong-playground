@@ -35,7 +35,7 @@ module.exports = {
             meta: {
                 method,
                 responseMatchKey,
-                globTraceId: getGlobTraceId(globTraceId),
+                globTraceId: getGlobTraceId({globTraceId}),
                 isNotification: (!id)
             }
         };
