@@ -36,7 +36,7 @@ module.exports = (Node) => {
                     this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
                     throw new errors.Validation('Validation', {id, state: {errors: validate.errors, method, json}});
                 }
-                let msg = constructJsonrpcRequest({method, ...json});
+                let msg = constructJsonrpcRequest({method, ...json}, (...args) => this.getGlobTraceId(...args));
                 r = {id, result: await this.apiRequestReceived(msg)};
             } catch (e) {
                 throw e;

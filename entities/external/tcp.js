@@ -147,7 +147,7 @@ module.exports = (Node) => {
                 let {parsed} = await this.decode(result);
                 this.log('info', {in: 'tcp.externalIn', parsed});
                 var {apiRequestId, globTraceId} = this.matchExternalInToTx(parsed);
-                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId: (globTraceId || {id: uuid(), count: 1}), apiRequestId}});
+                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId: this.getGlobTraceId({globTraceId}), apiRequestId}});
             } catch (error) {
                 this.log('error', {in: 'tcp.externalIn', error});
                 throw error;

@@ -29,7 +29,7 @@ module.exports = (Node) => {
             var globTraceId = {};
             if (!meta.globTraceId) {
                 globTraceId.id = uuid();
-                globTraceId.count = 0;
+                globTraceId.count = 1;
             } else {
                 return super.getGlobTraceId(meta);
             }
