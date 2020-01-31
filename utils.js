@@ -29,13 +29,13 @@ module.exports = {
         let rcRes = path.reduce((rcTmp, c) => rcTmp[c], rc(name, arr2obj(path, innerValue)));
         return pso(rcRes);
     },
-    constructJsonrpcRequest: ({params, method, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}, getGlobTraceId = (globTraceId) => (globTraceId || {id: uuid(), count: 1})) => {
+    constructJsonrpcRequest: ({params, method, id = 0, meta: {globTrace, responseMatchKey} = {}} = {}, getGlobTrace = (globTrace) => (globTrace || {id: uuid(), count: 1})) => {
         return {
             message: params,
             meta: {
                 method,
                 responseMatchKey,
-                globTraceId: getGlobTraceId({globTraceId}),
+                globTrace: getGlobTrace({globTrace}),
                 isNotification: (!id)
             }
         };

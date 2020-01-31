@@ -25,15 +25,15 @@ module.exports = (Node) => {
         }
 
         // construct global trace id
-        getGlobTraceId(meta) {
-            var globTraceId = {};
-            if (!meta.globTraceId) {
-                globTraceId.id = uuid();
-                globTraceId.count = 1;
+        getGlobTrace(meta) {
+            var globTrace = {};
+            if (!meta.globTrace) {
+                globTrace.id = uuid();
+                globTrace.count = 1;
             } else {
-                return super.getGlobTraceId(meta);
+                return super.getGlobTrace(meta);
             }
-            return super.getGlobTraceId({globTraceId});
+            return super.getGlobTrace({globTrace});
         }
 
         // expose getInternalCommunicationContext because it is needed for request and notif.

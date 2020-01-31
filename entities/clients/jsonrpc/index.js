@@ -36,7 +36,7 @@ module.exports = (Node) => {
         getClient(client, props) {
             if (!this.remoteClients[client]) {
                 let config = this.getClientConfig(client, props);
-                this.remoteClients[client] = clients[config.proto](config, (...args) => this.log(...args));
+                this.remoteClients[client] = clients[config.proto](config, (...args) => this.log(...args), {cleanupMeta: (m) => this.cleanMeta(m).meta});
             }
             return this.remoteClients[client];
         }

@@ -27,19 +27,26 @@ module.exports = (Node) => {
             this.tracer = tracer({name: this.resolveName});
         }
 
-        getGlobTraceId(meta) {
+        getSpan({tag = 'no tag', parent}) {
+            return (parent && this.tracer.startSpan(tag, {childOf: parent})) || this.tracer.startSpan(tag);
+        }
+
+        getGlobTrace(meta) {
             let ids = {};
-            let parentSpanContext = this.tracer.extract(FORMAT_HTTP_HEADERS, (meta.globTraceId && meta.globTraceId.id && {'uber-trace-id': meta.globTraceId.id}) || {});
-            let span = this.tracer.startSpan('getGlobTraceId', {childOf: parentSpanContext});
+            let parent = this.tracer.extract(FORMAT_HTTP_HEADERS, (meta.globTrace && meta.globTrace.id && {'uber-trace-id': meta.globTrace.id}) || {});
+            let span = this.getSpan({tag: 'entry', parent});
             this.tracer.inject(span, FORMAT_HTTP_HEADERS, ids);
             return {id: ids['uber-trace-id'], span};
         }
 
-        async remoteApiRequest({destination, message, meta}) {
-            let {globTraceId, ...metaRest} = meta;
-            let {span, ...globTraceIdRest} = globTraceId;
+        getSpanFromMeta(meta) {
+            return meta && meta.globTrace && meta.globTrace.span;
+        }
+
+        async remoteApiCall({destination, message, meta}) {
+            let span = this.getSpanFromMeta(meta);
             try {
-                let resp = await super.remoteApiRequest({destination, message, meta: {...metaRest, globTraceId: globTraceIdRest}});
+                let resp = await super.remoteApiCall({destination, message, meta});
                 span.finish();
                 return resp;
             } catch (e) {
@@ -55,17 +62,23 @@ module.exports = (Node) => {
             try {
                 let {id, parsed} = this.parseIncomingApiCall(requestData);
                 let {meta, ...restParsed} = parsed;
-                let {globTraceId, ...restMeta} = meta;
-                let {span, ...globTraceIdRest} = globTraceId;
-                globSpan = span;
-                r = {id, result: await this.apiRequestReceived({...restParsed, meta: {...restMeta, globTraceId: globTraceIdRest}})};
-                span.finish();
+                globSpan = this.getSpanFromMeta(meta);
+                r = {id, result: await this.apiRequestReceived({...restParsed, meta})};
+                meta.globTrace.span.finish();
                 return r;
             } catch (e) {
                 globSpan && globSpan.setTag(Tags.ERROR, true);
                 globSpan && globSpan.finish();
                 throw e;
             }
+        }
+
+        cleanMeta({globTrace, ...metaClean}) {
+            if (!globTrace) {
+                return super.cleanMeta(metaClean);
+            }
+            let {span, ...globTraceNoSpan} = globTrace;
+            return {span, ...super.cleanMeta({globTrace: globTraceNoSpan, ...metaClean})};
         }
 
         stop() {

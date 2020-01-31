@@ -135,8 +135,8 @@ module.exports = (Node) => {
                 return false;
             });
             if (idxRspMatch >= 0) {
-                var {apiRequestId, globTraceId} = this.apiRequestsPool[idxRspMatch].meta;
-                return {apiRequestId, globTraceId};
+                var {apiRequestId, globTrace} = this.apiRequestsPool[idxRspMatch].meta;
+                return {apiRequestId, globTrace};
             }
             return {};
         }
@@ -146,8 +146,8 @@ module.exports = (Node) => {
             try {
                 let {parsed} = await this.decode(result);
                 this.log('info', {in: 'tcp.externalIn', parsed});
-                var {apiRequestId, globTraceId} = this.matchExternalInToTx(parsed);
-                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId: this.getGlobTraceId({globTraceId}), apiRequestId}});
+                var {apiRequestId, globTrace} = this.matchExternalInToTx(parsed);
+                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTrace: this.getGlobTrace({globTrace}), apiRequestId}});
             } catch (error) {
                 this.log('error', {in: 'tcp.externalIn', error});
                 throw error;
