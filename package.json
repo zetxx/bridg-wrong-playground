@@ -29,5 +29,6 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/zetxx/bridg-wrong-playground.git"
-    }
+    },
+    "homepage": "https://github.com/zetxx/bridg-wrong-playground/blob/master/README.md"
 }
