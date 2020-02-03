@@ -16,6 +16,19 @@ module.exports = (Node) => {
         }
     }
     return class Service extends State {
+        async triggerEvent(event, {message, meta} = {}) {
+            if (this.stopping) {
+                return;
+            }
+            this.log('trace', {in: 'service.triggerEvent', event, message});
+            try {
+                let fn = await this.findExternalMethod({method: `event.${event}`});
+                let result = await fn(this.getInternalCommunicationContext({direction: 'in', ...meta}), message, meta);
+                return result && this.externalOut({result, meta: {method: event, event: true}});
+            } catch (error) {
+                return this.log('error', {in: 'service.triggerEvent', error});
+            }
+        }
         getFingerprint() {
             return Object.assign(
                 {},
