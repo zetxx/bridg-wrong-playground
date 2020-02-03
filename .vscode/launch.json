@@ -27,10 +27,34 @@
                 "--api.port=9002"
             ],
             "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "c",
+            "outputCapture": "std",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/c.js",
+            "runtimeArgs": ["--preserve-symlinks"],
+            "args": [
+                "--api.port=9003"
+            ],
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "d",
+            "outputCapture": "std",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/d.js",
+            "runtimeArgs": ["--preserve-symlinks"],
+            "args": [
+                "--api.port=9004"
+            ],
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         }
     ],
     "compounds": [{
-        "name": "a+b",
-        "configurations": ["a", "b"]
+        "name": "a+b+c+d",
+        "configurations": ["a", "b", "c", "d"]
     }]
 }

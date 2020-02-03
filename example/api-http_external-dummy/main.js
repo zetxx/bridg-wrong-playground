@@ -23,15 +23,38 @@ module.exports = (suf, eventSource = 0) => {
     service.registerApiMethods([{
         method: 'r',
         direction: 'in',
-        fn: function(message = {}) {
-            return {r: 1};
+        fn: async function(message = {}) {
+            let result = {r: 1, node: [id, suf]};
+            if (suf === 'a') {
+                result[suf] = await this.request([id, 'c.r'].join(''), );
+            }
+            if (suf === 'c') {
+                result[suf] = await this.request([id, 'b.r'].join(''), );
+            }
+            if (suf === 'b') {
+                result[suf] = await this.request([id, 'd.r'].join(''), );
+            }
+            return result;
+        }
+    }, {
+        method: 'r',
+        direction: 'out',
+        fn: function({result} = {}) {
+            return result;
         }
     }, {
         method: 'n',
         direction: 'in',
         meta: {isNotification: 1},
         fn: function(message = {}) {
-            return {n: 1};
+            return {n: 1, node: [id, suf]};
+        }
+    }, {
+        method: 'n',
+        direction: 'out',
+        meta: {isNotification: 1},
+        fn: function(message = {}) {
+            return {n: 1, node: [id, suf]};
         }
     }]);
     service.registerExternalMethods([{
@@ -42,8 +65,8 @@ module.exports = (suf, eventSource = 0) => {
         fn: throwOrReturn
     }, {
         method: 'event.calling_a',
-        fn: function(message) {
-            this.request(`${id}a.r`);
+        fn: async function(message) {
+            await this.request(`${id}a.r`);
         }
     }]);
 
