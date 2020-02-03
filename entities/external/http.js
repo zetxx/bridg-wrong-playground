@@ -24,11 +24,11 @@ module.exports = (Node) => {
                 ));
         }
 
-        async triggerEvent(event, message = {}) {
+        async triggerEvent(event, {message, meta} = {}) {
             this.log('trace', {in: 'externalHttp.triggerEvent', event, message});
             try {
                 let fn = this.findExternalMethod({method: `event.${event}`});
-                let result = await fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
+                let result = await fn(this.getInternalCommunicationContext({direction: 'in', meta}), message, {});
                 return this.externalOut({result, meta: {method: event, event: true}});
             } catch (error) {
                 this.log('error', {in: 'externalHttp.triggerEvent', error});

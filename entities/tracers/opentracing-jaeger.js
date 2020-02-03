@@ -27,59 +27,77 @@ module.exports = (Node) => {
             this.tracer = tracer({name: this.resolveName});
         }
 
-        getSpan({tag = 'no tag', parent}) {
-            return (parent && this.tracer.startSpan(tag, {childOf: parent})) || this.tracer.startSpan(tag);
+        getSpan({name = 'no name', parent}) {
+            return (parent && this.tracer.startSpan(name, {childOf: parent})) || this.tracer.startSpan(name);
         }
 
-        getGlobTrace(meta) {
+        async triggerEvent(event, props = {}) {
+            let {span: initSpan, ...meta} = this.createGlobTrace();
+            let ev = await super.triggerEvent(event, {message: props.message, meta: {...props.meta, ...meta, parentSpan: initSpan}});
+            initSpan.finish();
+            return ev;
+        }
+
+        createGlobTrace() {
             let ids = {};
-            let parent = this.tracer.extract(FORMAT_HTTP_HEADERS, (meta.globTrace && meta.globTrace.id && {'uber-trace-id': meta.globTrace.id}) || {});
-            let span = this.getSpan({tag: 'entry', parent});
+            let parent = this.tracer.extract(FORMAT_HTTP_HEADERS, {});
+            let span = this.getSpan({name: 'first', parent});
             this.tracer.inject(span, FORMAT_HTTP_HEADERS, ids);
-            return {id: ids['uber-trace-id'], span};
+            return {globTrace: {id: ids['uber-trace-id']}, span};
         }
 
-        getSpanFromMeta(meta) {
-            return meta && meta.globTrace && meta.globTrace.span;
+        createSpan(spanName, {parentSpan, globTrace: {id} = {}} = {}) {
+            if (parentSpan) {
+                return this.getSpan({name: spanName, parent: parentSpan});
+            }
+            let parent = this.tracer.extract(FORMAT_HTTP_HEADERS, {'uber-trace-id': id});
+            return this.getSpan({name: spanName, parent});
+        }
+
+        getGlobTrace({globTrace}) {
+            return globTrace;
         }
 
         async remoteApiCall({destination, message, meta}) {
-            let span = this.getSpanFromMeta(meta);
             try {
+                let span = this.createSpan('remoteApiCall', meta);
                 let resp = await super.remoteApiCall({destination, message, meta});
                 span.finish();
                 return resp;
             } catch (e) {
-                span.setTag(Tags.ERROR, true);
-                span.finish();
                 throw e;
             }
         }
 
         async callApiMethod(requestData) {
             let r;
-            var globSpan;
             let {id, parsed} = this.parseIncomingApiCall(requestData);
+            let span = this.createSpan('httpIn', parsed.meta);
             try {
                 let {meta, ...restParsed} = parsed;
-                globSpan = this.getSpanFromMeta(meta);
-                r = {id, result: await this.apiRequestReceived({...restParsed, meta})};
-                meta.globTrace.span.finish();
+                r = {id, result: await this.apiRequestReceived({...restParsed, meta: {...meta, parentSpan: span}})};
+                span.finish();
                 return r;
             } catch (e) {
                 !e.id && (e.setId(id));
-                globSpan && globSpan.setTag(Tags.ERROR, true);
-                globSpan && globSpan.finish();
+                span.setTag(Tags.ERROR, true);
+                span.finish();
                 throw e;
             }
         }
 
-        cleanMeta({globTrace, ...metaClean}) {
-            if (!globTrace) {
-                return super.cleanMeta(metaClean);
-            }
-            let {span, ...globTraceNoSpan} = globTrace;
-            return {span, ...super.cleanMeta({globTrace: globTraceNoSpan, ...metaClean})};
+        cleanMeta({parentSpan, ...meta}) {
+            return meta;
+        }
+
+        callRegisteredMethod(fn, ctx, ...args) {
+            let [message, meta] = args;
+            let span = this.createSpan('transformerCall', meta);
+            meta.channel && span.setTag('channel', meta.channel);
+            meta.method && span.setTag('method', meta.method);
+            let r = super.callRegisteredMethod(fn, ctx, ...args);
+            span.finish();
+            return r;
         }
 
         stop() {

@@ -13,7 +13,13 @@ module.exports = (suf, eventSource = 0) => {
     }) {
         async start() {
             if  (eventSource) {
-                setTimeout(() => this.triggerEvent('calling_a'), 500)
+                let interval = setInterval(() => {
+                    if (this.stopping) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    this.triggerEvent('calling_a');
+                }, 1000)
             }
             return await super.start();
         }

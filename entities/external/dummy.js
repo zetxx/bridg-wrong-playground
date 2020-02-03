@@ -1,10 +1,13 @@
 module.exports = (Node) => {
     class Dummy extends Node {
-        async triggerEvent(event, message = {}) {
+        async triggerEvent(event, {message, meta} = {}) {
+            if (this.stopping) {
+                return;
+            }
             this.log('trace', {in: 'dummy.triggerEvent', event, message});
             try {
                 let fn = await this.findExternalMethod({method: `event.${event}`});
-                let result = await fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
+                let result = await fn(this.getInternalCommunicationContext({direction: 'in', ...meta}), message, meta);
                 return result && this.externalOut({result, meta: {method: event, event: true}});
             } catch (error) {
                 return this.log('error', {in: 'dummy.triggerEvent', error});

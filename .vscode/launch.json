@@ -9,6 +9,7 @@
             "request": "launch",
             "name": "a",
             "outputCapture": "std",
+            "console": "integratedTerminal",
             "program": "${workspaceFolder}/example/api-http_external-dummy/a.js",
             "runtimeArgs": ["--preserve-symlinks"],
             "args": [
@@ -21,6 +22,7 @@
             "request": "launch",
             "name": "b",
             "outputCapture": "std",
+            "console": "integratedTerminal",
             "program": "${workspaceFolder}/example/api-http_external-dummy/b.js",
             "runtimeArgs": ["--preserve-symlinks"],
             "args": [
@@ -33,6 +35,7 @@
             "request": "launch",
             "name": "c",
             "outputCapture": "std",
+            "console": "integratedTerminal",
             "program": "${workspaceFolder}/example/api-http_external-dummy/c.js",
             "runtimeArgs": ["--preserve-symlinks"],
             "args": [
@@ -45,6 +48,7 @@
             "request": "launch",
             "name": "d",
             "outputCapture": "std",
+            "console": "integratedTerminal",
             "program": "${workspaceFolder}/example/api-http_external-dummy/d.js",
             "runtimeArgs": ["--preserve-symlinks"],
             "args": [
