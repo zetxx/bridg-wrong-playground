@@ -1,0 +1,1 @@
+require('./main')('b', 1);

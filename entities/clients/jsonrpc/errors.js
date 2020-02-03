@@ -1,4 +1,4 @@
-const CustomError = require('../../../error');
+const CustomError = require('bridg-wrong/lib/error');
 const Http = CustomError({code: 'Http'});
 const Udp = CustomError({code: 'Udp'});
 

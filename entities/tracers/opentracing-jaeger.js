@@ -59,14 +59,15 @@ module.exports = (Node) => {
         async callApiMethod(requestData) {
             let r;
             var globSpan;
+            let {id, parsed} = this.parseIncomingApiCall(requestData);
             try {
-                let {id, parsed} = this.parseIncomingApiCall(requestData);
                 let {meta, ...restParsed} = parsed;
                 globSpan = this.getSpanFromMeta(meta);
                 r = {id, result: await this.apiRequestReceived({...restParsed, meta})};
                 meta.globTrace.span.finish();
                 return r;
             } catch (e) {
+                !e.id && (e.setId(id));
                 globSpan && globSpan.setTag(Tags.ERROR, true);
                 globSpan && globSpan.finish();
                 throw e;

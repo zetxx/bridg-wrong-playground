@@ -38,10 +38,11 @@ module.exports = (Node) => {
         }
         async callApiMethod(requestData) {
             let r;
+            let {id, parsed} = this.parseIncomingApiCall(requestData);
             try {
-                let {id, parsed} = this.parseIncomingApiCall(requestData);
                 r = {id, result: await this.apiRequestReceived(parsed)};
             } catch (e) {
+                !e.id && (e.setId(id));
                 throw e;
             }
             return r;

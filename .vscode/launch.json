@@ -7,39 +7,30 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Node 1",
+            "name": "a",
             "outputCapture": "std",
-            "program": "${workspaceFolder}/Node1/index.js",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/a.js",
             "runtimeArgs": ["--preserve-symlinks"],
+            "args": [
+                "--api.port=9001"
+            ],
             "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Node 2",
+            "name": "b",
             "outputCapture": "std",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/b.js",
             "runtimeArgs": ["--preserve-symlinks"],
-            "program": "${workspaceFolder}/Node2/index.js",
-            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Logger",
-            "outputCapture": "std",
-            "program": "${workspaceFolder}/Logger/index.js",
-            "runtimeArgs": ["--preserve-symlinks"],
+            "args": [
+                "--api.port=9002"
+            ],
             "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         }
     ],
-    "compounds": [
-        {
-            "name": "Node 1 + Node 2",
-            "configurations": ["Node 1", "Node 2"]
-        },
-        {
-            "name": "Node 1 + Logger",
-            "configurations": ["Node 1", "Logger"]
-        }
-    ]
+    "compounds": [{
+        "name": "a+b",
+        "configurations": ["a", "b"]
+    }]
 }
