@@ -88,16 +88,6 @@ module.exports = (Node) => {
             return super.stop();
         }
 
-        async triggerEvent(event, {message, meta} = {}) {
-            this.log('info', {in: 'tcp.triggerEvent', description: event, message});
-            try {
-                let fn = this.findExternalMethod({method: `event.${event}`});
-                return fn(this.getInternalCommunicationContext({direction: 'in', meta}), message, {});
-            } catch (error) {
-                this.log('error', {in: 'tcp.triggerEvent', error});
-            }
-        }
-
         getIncomingMessages(messages = []) {
             this.log('info', {in: 'tcp.getIncomingMessages', messages});
             var len = rqMsgLen(this.receivedBuffer);
