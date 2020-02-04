@@ -32,16 +32,16 @@ module.exports = (Node) => {
         }
 
         async triggerEvent(event, props = {}) {
-            let {span: initSpan, ...meta} = this.createGlobTrace();
+            let {span: initSpan, ...meta} = this.createGlobTrace({name: 'event.init'});
             let ev = await super.triggerEvent(event, {message: props.message, meta: {...props.meta, ...meta, parentSpan: initSpan}});
             initSpan.finish();
             return ev;
         }
 
-        createGlobTrace() {
+        createGlobTrace({name = 'first'} = {}) {
             let ids = {};
             let parent = this.tracer.extract(FORMAT_HTTP_HEADERS, {});
-            let span = this.getSpan({name: 'first', parent});
+            let span = this.getSpan({name, parent});
             this.tracer.inject(span, FORMAT_HTTP_HEADERS, ids);
             return {globTrace: {id: ids['uber-trace-id']}, span};
         }
@@ -54,6 +54,16 @@ module.exports = (Node) => {
             return this.getSpan({name: spanName, parent});
         }
 
+        matchExternalInToTx(packet) {
+            let {apiRequestId, globTrace} = super.matchExternalInToTx(packet);
+            if (!globTrace) {
+                let {globTrace: globTraceNew, span} = this.createGlobTrace({name: 'tcp.init'});
+                span.finish();
+                return {apiRequestId, globTrace: globTraceNew};
+            }
+            return {apiRequestId, globTrace};
+        }
+
         getGlobTrace({globTrace}) {
             return globTrace;
         }
@@ -61,6 +71,7 @@ module.exports = (Node) => {
         async remoteApiCall({destination, message, meta}) {
             try {
                 let span = this.createSpan('remoteApiCall', meta);
+                span.setTag('destination', destination);
                 let resp = await super.remoteApiCall({destination, message, meta});
                 span.finish();
                 return resp;
@@ -75,6 +86,7 @@ module.exports = (Node) => {
             let span = this.createSpan('httpIn', parsed.meta);
             try {
                 let {meta, ...restParsed} = parsed;
+                span.setTag('method', meta.method);
                 r = {id, result: await this.apiRequestReceived({...restParsed, meta: {...meta, parentSpan: span}})};
                 span.finish();
                 return r;
@@ -91,7 +103,7 @@ module.exports = (Node) => {
         }
 
         callRegisteredMethod(fn, ctx, ...args) {
-            let [message, meta] = args;
+            let [, meta] = args;
             let span = this.createSpan('transformerCall', meta);
             meta.channel && span.setTag('channel', meta.channel);
             meta.method && span.setTag('method', meta.method);
