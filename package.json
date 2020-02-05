@@ -14,6 +14,7 @@
         "ws": "*",
         "mdns-resolver": "*",
         "parse-strings-in-object": "*",
+        "opentracing": "*",
         "immutable": ">=4.0.0-rc.12",
         "pino": "*",
         "pino-pretty": "*",
