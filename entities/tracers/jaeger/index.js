@@ -1,3 +1,4 @@
+const {serializeError} = require('serialize-error');
 const initTracer = require('jaeger-client').initTracer;
 const {Tags, FORMAT_HTTP_HEADERS} = require('opentracing');
 const transportTcp = require('./tcp');
@@ -60,13 +61,17 @@ module.exports = (Node, {transport}) => {
         }
 
         async remoteApiCall({destination, message, meta}) {
+            let span = this.createSpan('remoteApiCall', meta);
+            span.setTag('destination', destination);
+
             try {
-                let span = this.createSpan('remoteApiCall', meta);
-                span.setTag('destination', destination);
                 let resp = await super.remoteApiCall({destination, message, meta});
                 span.finish();
                 return resp;
             } catch (e) {
+                span.setTag(Tags.ERROR, true);
+                span.log({event: 'error', error: serializeError(e)});
+                span.finish();
                 throw e;
             }
         }
@@ -84,6 +89,7 @@ module.exports = (Node, {transport}) => {
             } catch (e) {
                 !e.id && (e.setId(id));
                 span.setTag(Tags.ERROR, true);
+                span.log({event: 'error', error: serializeError(e)});
                 span.finish();
                 throw e;
             }
@@ -98,9 +104,15 @@ module.exports = (Node, {transport}) => {
             let span = this.createSpan('transformerCall', meta);
             meta.channel && span.setTag('channel', meta.channel);
             meta.method && span.setTag('method', meta.method);
-            let r = super.callRegisteredMethod(fn, ctx, ...args);
-            span.finish();
-            return r;
+            try {
+                let r = super.callRegisteredMethod(fn, ctx, ...args);
+                span.finish();
+                return r;
+            } catch (e) {
+                span.setTag(Tags.ERROR, true);
+                span.log({event: 'error', error: serializeError(e)});
+                span.finish();
+            }
         }
 
         stop() {
