@@ -158,7 +158,7 @@ module.exports = (Node) => {
                 this.log('info', {in: 'tcp.externalOut', worldOutBuffer: buffer.toString('hex')});
                 return this.socket.write(buffer);
             } catch (error) {
-                this.socket.end(() => this.socket.destroy());
+                this.socket && this.socket.end(() => this.socket.destroy());
                 this.log('error', {in: 'tcp.externalOut.catch', error});
                 throw error;
             }

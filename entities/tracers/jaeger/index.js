@@ -2,6 +2,7 @@ const {serializeError} = require('serialize-error');
 const initTracer = require('jaeger-client').initTracer;
 const {Tags, FORMAT_HTTP_HEADERS} = require('opentracing');
 const transportTcp = require('./tcp');
+const countersProm = require('./counters.prom');
 
 const tracer = ({name}) => {
     return initTracer({
@@ -22,7 +23,7 @@ const tracer = ({name}) => {
     });
 };
 
-module.exports = (Node, {transport}) => {
+module.exports = (Node, {transport, counters}) => {
     class Jaeger extends Node {
         constructor(...args) {
             super(...args);
@@ -52,7 +53,7 @@ module.exports = (Node, {transport}) => {
             if (parentSpan) {
                 return this.getSpan({name: spanName, parent: parentSpan});
             }
-            let parent = this.tracer.extract(FORMAT_HTTP_HEADERS, {'uber-trace-id': id});
+            let parent = this.tracer.extract(FORMAT_HTTP_HEADERS, id && {'uber-trace-id': id});
             return this.getSpan({name: spanName, parent});
         }
 
@@ -120,5 +121,6 @@ module.exports = (Node, {transport}) => {
             return super.stop();
         }
     }
-    return (transport === 'tcp' && transportTcp(Jaeger)) || Jaeger;
+    const c1 = (transport === 'tcp' && transportTcp(Jaeger)) || Jaeger;
+    return (counters === 'prom' && countersProm(c1)) || c1;
 };

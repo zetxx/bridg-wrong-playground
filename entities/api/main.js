@@ -18,6 +18,10 @@ const validationGen = ({params = {}, isNotification = 0, method = 'dummy.method'
 
 module.exports = (Node) => {
     class Api extends Node {
+        constructor(...args) {
+            super(...args);
+            this.internalApiMethods = {};
+        }
         parseIncomingApiCall(requestData) {
             let id;
             this.log('trace', {in: 'api.http.callApiMethod', msg: requestData});
