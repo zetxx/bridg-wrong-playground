@@ -1,5 +1,6 @@
 const initTracer = require('jaeger-client').initTracer;
 const {Tags, FORMAT_HTTP_HEADERS} = require('opentracing');
+const transportTcp = require('./tcp');
 
 const tracer = ({name}) => {
     return initTracer({
@@ -20,8 +21,8 @@ const tracer = ({name}) => {
     });
 };
 
-module.exports = (Node) => {
-    class Udp extends Node {
+module.exports = (Node, {transport}) => {
+    class Jaeger extends Node {
         constructor(...args) {
             super(...args);
             this.tracer = tracer({name: this.resolveName});
@@ -52,16 +53,6 @@ module.exports = (Node) => {
             }
             let parent = this.tracer.extract(FORMAT_HTTP_HEADERS, {'uber-trace-id': id});
             return this.getSpan({name: spanName, parent});
-        }
-
-        matchExternalInToTx(packet) {
-            let {apiRequestId, globTrace} = super.matchExternalInToTx(packet);
-            if (!globTrace) {
-                let {globTrace: globTraceNew, span} = this.createGlobTrace({name: 'tcp.init'});
-                span.finish();
-                return {apiRequestId, globTrace: globTraceNew};
-            }
-            return {apiRequestId, globTrace};
         }
 
         getGlobTrace({globTrace}) {
@@ -117,5 +108,5 @@ module.exports = (Node) => {
             return super.stop();
         }
     }
-    return Udp;
+    return (transport === 'tcp' && transportTcp(Jaeger)) || Jaeger;
 };

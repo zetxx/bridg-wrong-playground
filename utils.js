@@ -45,7 +45,7 @@ module.exports = {
             if (buildList[curr]) {
                 var req = [curr];
                 buildList[curr].type && req.push(buildList[curr].type);
-                return require(`./entities/${req.join('/')}`)(prev);
+                return require(`./entities/${req.join('/')}`)(prev, buildList[curr].args || {});
             }
             return prev;
         }, First(module.exports)(bw));
