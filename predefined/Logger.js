@@ -3,7 +3,12 @@ const {getConfig, factory} = require('../utils');
 
 module.exports = (id) => {
     const discovery = getConfig(id, ['discovery'], {}).type || 'mdns';
-    const Service = factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
+    const Service = factory({
+        state: true,
+        api: {type: 'udp'},
+        discovery: {type: discovery},
+        service: true
+    });
 
     class Logger extends Service {
         constructor(args) {
