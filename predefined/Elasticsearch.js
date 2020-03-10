@@ -4,7 +4,12 @@ const client = new Client({node: 'http://0.0.0.0:9200'});
 
 module.exports = (id) => {
     const discovery = getConfig(id, ['discovery'], {}).type || 'mdns';
-    const Service = factory({state: true, api: {type: 'udp'}, discovery: {type: discovery}, service: true});
+    const Service = factory({
+        state: true,
+        api: {type: 'udp'},
+        discovery: {type: discovery},
+        service: true
+    });
 
     class Es extends Service {
         constructor(args) {

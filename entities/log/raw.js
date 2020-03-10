@@ -25,7 +25,8 @@ module.exports = (Node) => {
 
         async initLogger() {}
 
-        async log(level, message) {
+        async log(level, {meta, ...messageLeft}) {
+            let message = (meta && {meta: this.cleanMeta(meta), ...messageLeft}) || messageLeft;
             if (level === 'error') {
                 message.error = serializeError(message.error);
             }

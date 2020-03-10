@@ -6,7 +6,7 @@ const First = require('./entities/first');
 const Last = require('./entities/last');
 
 const execOrder = [
-    'api', 'discovery', 'log', 'service', 'external'
+    'api', 'discovery', 'log', 'service', 'external', 'tracers'
 ];
 
 // creates object based on path given and innerValue
@@ -29,13 +29,13 @@ module.exports = {
         let rcRes = path.reduce((rcTmp, c) => rcTmp[c], rc(name, arr2obj(path, innerValue)));
         return pso(rcRes);
     },
-    constructJsonrpcRequest: ({params, method, id = 0, meta: {globTraceId, responseMatchKey} = {}} = {}) => {
+    constructJsonrpcRequest: ({params, method, id = 0, meta: {globTrace, responseMatchKey} = {}} = {}, getGlobTrace = (globTrace) => (globTrace || {id: uuid(), count: 1})) => {
         return {
             message: params,
             meta: {
                 method,
                 responseMatchKey,
-                globTraceId: (globTraceId || {id: uuid(), count: 1}),
+                globTrace: getGlobTrace({globTrace}),
                 isNotification: (!id)
             }
         };
@@ -45,7 +45,7 @@ module.exports = {
             if (buildList[curr]) {
                 var req = [curr];
                 buildList[curr].type && req.push(buildList[curr].type);
-                return require(`./entities/${req.join('/')}`)(prev);
+                return require(`./entities/${req.join('/')}`)(prev, buildList[curr].args || {});
             }
             return prev;
         }, First(module.exports)(bw));

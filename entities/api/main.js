@@ -18,27 +18,35 @@ const validationGen = ({params = {}, isNotification = 0, method = 'dummy.method'
 
 module.exports = (Node) => {
     class Api extends Node {
+        constructor(...args) {
+            super(...args);
+            this.internalApiMethods = {};
+        }
+        parseIncomingApiCall(requestData) {
+            let id;
+            this.log('trace', {in: 'api.http.callApiMethod', msg: requestData});
+            let {method, ...json} = JSON.parse(requestData);
+            id = json.id;
+            let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
+            if (!validation) {
+                throw new errors.MissingValidation(`missing validation for ${method}`, {id, state: {method, json}});
+            }
+            var ajv = new Ajv();
+            let validate = ajv.compile(validation);
+            let valid = validate({method, ...json});
+            if (!valid) {
+                this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
+                throw new errors.Validation('Validation', {id, state: {errors: validate.errors, method, json}});
+            }
+            return {id, parsed: constructJsonrpcRequest({method, ...json}, (...args) => this.getGlobTrace(...args))};
+        }
         async callApiMethod(requestData) {
             let r;
-            let id;
+            let {id, parsed} = this.parseIncomingApiCall(requestData);
             try {
-                this.log('trace', {in: 'api.http.callApiMethod', msg: requestData});
-                let {method, ...json} = JSON.parse(requestData);
-                id = json.id;
-                let {validation} = this.apiRoutes.filter(({methodName}) => (methodName === method)).pop() || {};
-                if (!validation) {
-                    throw new errors.MissingValidation(`missing validation for ${method}`, {id, state: {method, json}});
-                }
-                var ajv = new Ajv();
-                let validate = ajv.compile(validation);
-                let valid = validate({method, ...json});
-                if (!valid) {
-                    this.log('error', {in: 'api.http.callApiMethod', error: validate.errors});
-                    throw new errors.Validation('Validation', {id, state: {errors: validate.errors, method, json}});
-                }
-                let msg = constructJsonrpcRequest({method, ...json});
-                r = {id, result: await this.apiRequestReceived(msg)};
+                r = {id, result: await this.apiRequestReceived(parsed)};
             } catch (e) {
+                !e.id && (e.setId(id));
                 throw e;
             }
             return r;

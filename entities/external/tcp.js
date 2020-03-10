@@ -88,16 +88,6 @@ module.exports = (Node) => {
             return super.stop();
         }
 
-        async triggerEvent(event, message = {}) {
-            this.log('info', {in: 'tcp.triggerEvent', description: event, message});
-            try {
-                let fn = this.findExternalMethod({method: `event.${event}`});
-                return fn(this.getInternalCommunicationContext({direction: 'in'}), message, {});
-            } catch (error) {
-                this.log('error', {in: 'tcp.triggerEvent', error});
-            }
-        }
-
         getIncomingMessages(messages = []) {
             this.log('info', {in: 'tcp.getIncomingMessages', messages});
             var len = rqMsgLen(this.receivedBuffer);
@@ -135,8 +125,8 @@ module.exports = (Node) => {
                 return false;
             });
             if (idxRspMatch >= 0) {
-                var {apiRequestId, globTraceId} = this.apiRequestsPool[idxRspMatch].meta;
-                return {apiRequestId, globTraceId};
+                var {apiRequestId, globTrace} = this.apiRequestsPool[idxRspMatch].meta;
+                return {apiRequestId, globTrace};
             }
             return {};
         }
@@ -146,8 +136,8 @@ module.exports = (Node) => {
             try {
                 let {parsed} = await this.decode(result);
                 this.log('info', {in: 'tcp.externalIn', parsed});
-                var {apiRequestId, globTraceId} = this.matchExternalInToTx(parsed);
-                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTraceId: (globTraceId || {id: uuid(), count: 1}), apiRequestId}});
+                var {apiRequestId, globTrace} = this.matchExternalInToTx(parsed);
+                return super.externalIn({result: parsed, meta: {method: ((apiRequestId && 'networkCommandResponse') || 'networkCommand'), globTrace: this.getGlobTrace({globTrace}), apiRequestId}});
             } catch (error) {
                 this.log('error', {in: 'tcp.externalIn', error});
                 throw error;
@@ -168,7 +158,7 @@ module.exports = (Node) => {
                 this.log('info', {in: 'tcp.externalOut', worldOutBuffer: buffer.toString('hex')});
                 return this.socket.write(buffer);
             } catch (error) {
-                this.socket.end(() => this.socket.destroy());
+                this.socket && this.socket.end(() => this.socket.destroy());
                 this.log('error', {in: 'tcp.externalOut.catch', error});
                 throw error;
             }

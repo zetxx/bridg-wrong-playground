@@ -7,39 +7,58 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Node 1",
+            "name": "a",
             "outputCapture": "std",
-            "program": "${workspaceFolder}/Node1/index.js",
+            "_console": "integratedTerminal",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/a.js",
             "runtimeArgs": ["--preserve-symlinks"],
+            "args": [
+                "--api.port=9001"
+            ],
             "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Node 2",
+            "name": "b",
             "outputCapture": "std",
+            "_console": "integratedTerminal",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/b.js",
             "runtimeArgs": ["--preserve-symlinks"],
-            "program": "${workspaceFolder}/Node2/index.js",
+            "args": [
+                "--api.port=9002"
+            ],
             "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Logger",
+            "name": "c",
             "outputCapture": "std",
-            "program": "${workspaceFolder}/Logger/index.js",
+            "_console": "integratedTerminal",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/c.js",
             "runtimeArgs": ["--preserve-symlinks"],
+            "args": [
+                "--api.port=9003"
+            ],
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "d",
+            "outputCapture": "std",
+            "_console": "integratedTerminal",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/d.js",
+            "runtimeArgs": ["--preserve-symlinks"],
+            "args": [
+                "--api.port=9004"
+            ],
             "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         }
     ],
-    "compounds": [
-        {
-            "name": "Node 1 + Node 2",
-            "configurations": ["Node 1", "Node 2"]
-        },
-        {
-            "name": "Node 1 + Logger",
-            "configurations": ["Node 1", "Logger"]
-        }
-    ]
+    "compounds": [{
+        "name": "a+b+c+d",
+        "configurations": ["a", "b", "c", "d"]
+    }]
 }

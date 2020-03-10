@@ -16,6 +16,19 @@ module.exports = (Node) => {
         }
     }
     return class Service extends State {
+        async triggerEvent(event, {message, meta} = {}) {
+            if (this.stopping) {
+                return;
+            }
+            this.log('trace', {in: 'service.triggerEvent', event, message});
+            try {
+                let fn = await this.findExternalMethod({method: `event.${event}`});
+                let result = await fn(this.getInternalCommunicationContext({direction: 'in', ...meta}), message, meta);
+                return result && this.externalOut({result, meta: {method: event, event: true}});
+            } catch (error) {
+                return this.log('error', {in: 'service.triggerEvent', error});
+            }
+        }
         getFingerprint() {
             return Object.assign(
                 {},
@@ -25,15 +38,14 @@ module.exports = (Node) => {
         }
 
         // construct global trace id
-        getGlobTraceId(meta) {
-            var globTraceId = {};
-            if (!meta.globTraceId) {
-                globTraceId.id = uuid();
-                globTraceId.count = 0;
+        getGlobTrace(meta) {
+            var globTrace = {};
+            if (!meta.globTrace) {
+                globTrace.id = uuid();
             } else {
-                return super.getGlobTraceId(meta);
+                return super.getGlobTrace(meta);
             }
-            return super.getGlobTraceId({globTraceId});
+            return super.getGlobTrace({globTrace});
         }
 
         // expose getInternalCommunicationContext because it is needed for request and notif.

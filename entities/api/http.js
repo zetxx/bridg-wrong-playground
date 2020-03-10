@@ -49,15 +49,23 @@ module.exports = (Node) => {
                             this.log('trace', {in: 'api.http.request.api', method, url});
                             res.writeHead(200);
                             res.end(JSON.stringify(this.apiRoutes.map(({methodName, validation}) => ({[methodName]: validation || null}))));
+                        } else if (this.internalApiMethods && this.internalApiMethods[[method, url].join('')]) {
+                                res.writeHead(200);
+                                res.end(this.internalApiMethods[[method, url].join('')]());
                         } else {
                             this.log('trace', {in: 'api.http.request.404', method, url});
                             res.writeHead(404);
                             res.end(null);
                         }
                     } else {
-                        this.log('trace', {in: 'api.http.request.404', method, url});
-                        res.writeHead(404);
-                        res.end(null);
+                        if (this.internalApiMethods && this.internalApiMethods[[method, url].join('/')]) {
+                            res.writeHead(200);
+                            res.end(this.internalApiMethods[[method, url].join('')]());
+                        } else {
+                            this.log('trace', {in: 'api.http.request.404', method, url});
+                            res.writeHead(404);
+                            res.end(null);
+                        }
                     }
                 });
                 this.httpApiServer.listen({

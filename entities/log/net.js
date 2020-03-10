@@ -61,7 +61,8 @@ module.exports = (Node) => {
             stopping && clearInterval(queueCleanInterval);
         }
 
-        async log(level, message) {
+        async log(level, {meta, ...messageLeft}) {
+            let message = (meta && {meta: this.cleanMeta(meta), ...messageLeft}) || messageLeft;
             if (!this.logMethodFilter(level)) {
                 return;
             }

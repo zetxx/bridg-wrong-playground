@@ -1,13 +1,21 @@
 {
     "name": "bridg-wrong-playground",
     "description": "",
-    "dependencies": {},
+    "dependencies": {
+        "ajv": "^6.11.0",
+        "parse-strings-in-object": "^2.0.0",
+        "serialize-error": "^5.0.0",
+        "uuid": "^3.4.0"
+    },
     "peerDependencies": {
         "ajv": "^6.10.2",
         "rc": "*",
         "ws": "*",
         "mdns-resolver": "*",
         "parse-strings-in-object": "*",
+        "opentracing": "*",
+        "jaeger-client": "*",
+        "prom-client": "*",
         "immutable": ">=4.0.0-rc.12",
         "pino": "*",
         "pino-pretty": "*",
@@ -16,12 +24,25 @@
         "pg": "*",
         "serialize-error": "*",
         "bridg-wrong": "*",
-        "flat": "*",
         "@elastic/elasticsearch": "*"
     },
     "devDependencies": {
+        "@elastic/elasticsearch": "*",
+        "ajv": "^6.10.2",
+        "dns-discovery": "*",
+        "immutable": ">=4.0.0-rc.12",
+        "jaeger-client": "^3.17.1",
+        "mdns-resolver": "*",
+        "parse-strings-in-object": "*",
+        "pg": "*",
+        "pino": "*",
+        "pino-pretty": "*",
+        "rc": "*",
+        "semantic-release": "^17.0.1",
+        "serialize-error": "*",
+        "uuid": "*",
         "why-is-node-running": "*",
-        "semantic-release": "^15.0.0"
+        "ws": "*"
     },
     "author": "zetxx",
     "license": "MIT",

@@ -2,17 +2,18 @@ const http = require('http');
 const https = require('https');
 const errors = require('./errors');
 
-module.exports = ({remote, listen, timeout}, log) => {
+module.exports = ({remote, listen, timeout}, log, {cleanMeta}) => {
     var intCounter = 1;
 
     return {
         send: ({method, params, meta}) => (new Promise((resolve, reject) => {
+            let metaClean = cleanMeta(meta);
             var body = JSON.stringify({
                 jsonrpc: '2.0',
                 method,
-                meta: meta || {},
+                meta: metaClean || {},
                 params,
-                id: (!meta || meta.isNotification) ? 0 : intCounter++
+                id: (!metaClean || metaClean.isNotification) ? 0 : intCounter++
             });
             var resolved = false;
             let reqObj = {
@@ -54,7 +55,7 @@ module.exports = ({remote, listen, timeout}, log) => {
                 });
 
             req.on('error', (err) => {
-                err.setState && err.setState({method, params, meta});
+                err.setState && err.setState({method, params, meta: metaClean});
                 !resolved && reject(err);
                 resolved = true;
             });
