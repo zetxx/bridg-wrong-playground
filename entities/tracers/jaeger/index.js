@@ -1,5 +1,7 @@
 const {serializeError} = require('serialize-error');
 const initTracer = require('jaeger-client').initTracer;
+const PrometheusMetricsFactory = require('jaeger-client').PrometheusMetricsFactory;
+const promClient = require('prom-client');
 const {Tags, FORMAT_HTTP_HEADERS} = require('opentracing');
 const transportTcp = require('./tcp');
 const countersProm = require('./counters.prom');
@@ -19,7 +21,8 @@ const tracer = ({name}) => {
     }, {
         tags: {
             [name]: '1.1.2'
-        }
+        },
+        metrics: new PrometheusMetricsFactory(promClient, name)
     });
 };
 
@@ -64,6 +67,7 @@ module.exports = (Node, {transport, counters}) => {
         async remoteApiCall({destination, message, meta}) {
             let span = this.createSpan('remoteApiCall', meta);
             span.setTag('destination', destination);
+            span.setTag('message', message);
 
             try {
                 let resp = await super.remoteApiCall({destination, message, meta});
