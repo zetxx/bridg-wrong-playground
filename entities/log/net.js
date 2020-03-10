@@ -62,7 +62,7 @@ module.exports = (Node) => {
         }
 
         async log(level, {meta, ...messageLeft}) {
-            let message = (meta && {meta: this.cleanMeta(meta).meta, ...messageLeft}) || messageLeft;
+            let message = (meta && {meta: this.cleanMeta(meta), ...messageLeft}) || messageLeft;
             if (!this.logMethodFilter(level)) {
                 return;
             }

@@ -42,7 +42,6 @@ module.exports = (Node) => {
             var globTrace = {};
             if (!meta.globTrace) {
                 globTrace.id = uuid();
-                globTrace.count = 1;
             } else {
                 return super.getGlobTrace(meta);
             }

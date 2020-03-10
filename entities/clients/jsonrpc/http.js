@@ -2,12 +2,12 @@ const http = require('http');
 const https = require('https');
 const errors = require('./errors');
 
-module.exports = ({remote, listen, timeout}, log, {cleanupMeta}) => {
+module.exports = ({remote, listen, timeout}, log, {cleanMeta}) => {
     var intCounter = 1;
 
     return {
         send: ({method, params, meta}) => (new Promise((resolve, reject) => {
-            let metaClean = cleanupMeta(meta);
+            let metaClean = cleanMeta(meta);
             var body = JSON.stringify({
                 jsonrpc: '2.0',
                 method,

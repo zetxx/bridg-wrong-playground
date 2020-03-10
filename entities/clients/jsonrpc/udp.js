@@ -12,7 +12,7 @@ const getCircularReplacer = () => {
     };
 };
 
-module.exports = ({remote, listen, timeout}, log, {cleanupMeta}) => {
+module.exports = ({remote, listen, timeout}, log, {cleanMeta}) => {
     var intCounter = 1;
     var client = dgram.createSocket('udp4');
     client.on('message', (msg, rinfo) => {
@@ -35,7 +35,7 @@ module.exports = ({remote, listen, timeout}, log, {cleanupMeta}) => {
     return {
         send: ({method, params: {message, ...rest}, meta}) => (new Promise((resolve, reject) => {
             try {
-                var metaClean = cleanupMeta(meta);
+                var metaClean = cleanMeta(meta);
                 var preparedMessage = {
                     jsonrpc: '2.0',
                     method,
