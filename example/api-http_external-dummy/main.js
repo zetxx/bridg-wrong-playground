@@ -1,4 +1,4 @@
-const {getConfig, factory, throwOrReturn} = require('../../utils');
+const {factory, throwOrReturn} = require('../../utils');
 
 module.exports = (suf, eventSource = 0) => {
     const id = `api-http_external-dummy_`;
