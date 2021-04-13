@@ -49,23 +49,10 @@
             "name": "d",
             "outputCapture": "std",
             "_console": "integratedTerminal",
-            "program": "${workspaceFolder}/tmp/api-http_external-dummy/d.js",
+            "program": "${workspaceFolder}/example/api-http_external-dummy/d.js",
             "runtimeArgs": ["--preserve-symlinks"],
             "args": [
                 "--api.port=9004"
-            ],
-            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "a1",
-            "outputCapture": "std",
-            "_console": "integratedTerminal",
-            "program": "${workspaceFolder}/tmp/1/index.js",
-            "runtimeArgs": ["--preserve-symlinks"],
-            "args": [
-                "--api.port=9001"
             ],
             "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         }
