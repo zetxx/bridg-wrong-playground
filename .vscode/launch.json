@@ -7,58 +7,13 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "a",
+            "name": "http-server--http-client",
             "outputCapture": "std",
             "_console": "integratedTerminal",
-            "program": "${workspaceFolder}/example/api-http_external-dummy/a.js",
+            "program": "${workspaceFolder}/examples/http-server-http-client/index.js",
             "runtimeArgs": ["--preserve-symlinks"],
-            "args": [
-                "--api.port=9001"
-            ],
-            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "b",
-            "outputCapture": "std",
-            "_console": "integratedTerminal",
-            "program": "${workspaceFolder}/example/api-http_external-dummy/b.js",
-            "runtimeArgs": ["--preserve-symlinks"],
-            "args": [
-                "--api.port=9002"
-            ],
-            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "c",
-            "outputCapture": "std",
-            "_console": "integratedTerminal",
-            "program": "${workspaceFolder}/example/api-http_external-dummy/c.js",
-            "runtimeArgs": ["--preserve-symlinks"],
-            "args": [
-                "--api.port=9003"
-            ],
-            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "d",
-            "outputCapture": "std",
-            "_console": "integratedTerminal",
-            "program": "${workspaceFolder}/example/api-http_external-dummy/d.js",
-            "runtimeArgs": ["--preserve-symlinks"],
-            "args": [
-                "--api.port=9004"
-            ],
-            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"},
+            "cwd": "${workspaceFolder}/examples/http-server-http-client"
         }
-    ],
-    "compounds": [{
-        "name": "a+b+c+d",
-        "configurations": ["a", "b", "c", "d"]
-    }]
+    ]
 }
