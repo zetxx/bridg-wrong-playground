@@ -24,15 +24,13 @@ module.exports = ({app}) => {
 
     router.methods.add({
         method: 'method1.in',
-        fn: ({payload, error}) => {
-            return ['method1.in'];
-        }
+        fn: ({payload, error}) => payload
+            .concat(['method1.in'])
     });
     router.methods.add({
         method: 'method1.out',
-        fn: ({payload, error}) => {
-            return payload.concat(['method1.out']);
-        }
+        fn: ({payload, error}) => payload
+            .concat(['method1.out'])
     });
 
     const init = () => {};

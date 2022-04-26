@@ -15,16 +15,11 @@ module.exports = ({app}) => {
 
     router.methods.add({
         method: 'method1.in',
-        fn: ({payload, error}) => {
-
-            return [payload, 'method1.in'];
-        }
+        fn: ({payload, error}) => [payload, 'method1.in']
     });
     router.methods.add({
         method: 'method1.out',
-        fn: ({payload, error}) => {
-            return ['method1.out'];
-        }
+        fn: ({payload, error}) => ['method1.out']
     });
 
     const init = () => {
