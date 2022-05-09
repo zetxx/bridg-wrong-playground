@@ -5,7 +5,6 @@ module.exports = ({app}) => {
     const directionHooks = {
         out: async(packet) => {
             packet.payload = packet.payload.concat('hook');
-            console.log(123);
             return packet;
         }
     };
@@ -24,8 +23,8 @@ module.exports = ({app}) => {
 
     router.methods.add({
         method: 'method1.in',
-        fn: ({payload, error}) => payload
-            .concat(['method1.in'])
+        fn: ({payload, error}) => ((payload || [])
+            .concat(['method1.in']))
     });
     router.methods.add({
         method: 'method1.out',

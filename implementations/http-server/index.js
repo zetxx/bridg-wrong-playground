@@ -15,11 +15,13 @@ module.exports = ({app}) => {
 
     router.methods.add({
         method: 'method1.in',
-        fn: ({payload, error}) => [payload, 'method1.in']
+        fn: ({payload, error}) => ((payload || [])
+            .concat('method1.in'))
     });
     router.methods.add({
         method: 'method1.out',
-        fn: ({payload, error}) => ['method1.out']
+        fn: ({payload, error}) => ((payload || [])
+            .concat(['method1.out']))
     });
 
     const init = () => {
@@ -27,9 +29,11 @@ module.exports = ({app}) => {
             const inter = await router.pass({
                 packet: {
                     payload: 3,
-                    meta: {method: 'method1'}
+                    meta: {
+                        method: 'method1',
+                        direction: 'in'
+                    }
                 },
-                direction: 'in'
             });
             const result = await inter.promise;
 
