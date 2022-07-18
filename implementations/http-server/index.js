@@ -1,54 +1,71 @@
-const http = require('http');
-const Router = require('../log');
+const {v4} = require('uuid');
+const {createServer} = require('http');
 
-module.exports = ({app}) => {
-    const router = Router({
-        app,
-        routerId: 'http-server'
-    });
-
-    const {
-        config: {
-            http: {server: config}
+module.exports = (props) => {
+    const prev = require('../config')(props);
+    const {port} = prev.config;
+    // register special method
+    // prev.methods.add({
+    //     method: '*.out',
+    //     fn: (args) => (args)
+    // });
+    prev.methods.add({
+        method: 'a.out',
+        fn: ({payload, error}) => {
+            if (error) {
+                throw error;
+            }
+            return `${payload}.out`;
         }
-    } = router;
-
-    router.methods.add({
-        method: 'method1.in',
-        fn: ({payload, error}) => ((payload || [])
-            .concat('method1.in'))
     });
-    router.methods.add({
-        method: 'method1.out',
-        fn: ({payload, error}) => ((payload || [])
-            .concat(['method1.out']))
+    prev.methods.add({
+        method: 'a.in',
+        fn: ({payload, error}) => {
+            if (error) {
+                throw error;
+            }
+            return `${payload}.in`;
+        }
     });
-
-    const init = () => {
-        const server = http.createServer(async(req, res) => {
-            const inter = await router.pass({
-                packet: {
-                    payload: 3,
-                    meta: {
-                        method: 'method1',
-                        direction: 'in'
-                    }
-                },
-            });
-            const result = await inter.promise;
-
-            res.writeHead(200);
-            res.end(JSON.stringify(result));
-        });
-        server.listen(config.listen.port);
-        router.log('info', `http@ http://localhost:${config.listen.port}/`);
-    };
 
     return {
-        ...router,
-        start: async() => {
-            await router.start();
-            init();
+        ...prev,
+        async start() {
+            setTimeout(async() => {
+                try {
+                    await prev.ctx().router.pass({
+                        vector: prev.tag,
+                        packet: {
+                            meta: {
+                                method: 'a',
+                                trace: v4()
+                            },
+                            payload: 'hey'
+                        }
+                    });
+                    console.log(123);
+                } catch (e) {
+                    console.error('server catch');
+                    console.error(e);
+                }
+            }, 1000);
+            // const s = createServer(async(req, res) => {
+            //     const response = await prev.ctx().router.pass({
+            //         vector: prev.tag,
+            //         packet: {
+            //             meta: {
+            //                 method: 'a',
+            //                 trace: v4()
+            //             },
+            //             payload: 'hey'
+            //         }
+            //     });
+            //     res.writeHead(200, { 'Content-Type': 'application/json' });
+            //     res.end('haloz');
+            // });
+            // s.listen(port);
+            console.log(`listening: http://localhost:${port}`);
+            return await prev.start();
         }
     };
 };

@@ -1,26 +1,28 @@
 const rc = require('rc');
-const bw = require('bridg-wrong');
+const vector = require('bridg-wrong/lib/vector');
 
-module.exports = {
-    Router: ({app, routerId, ...rest}) => {
-        const config = rc(app);
-        const inst = bw.Router({
-            ...rest,
-            config: {
-                id: routerId,
-                ...(config.router || {})
+module.exports = ({
+    app,
+    part
+}) => {
+    const config = rc(app, {
+        [part]: {
+            vector: {
+                request: {
+                    waitTime: 30000
+                }
             }
-        });
+        }
+    })[part];
 
-        return {
-            ...inst,
-            config: {
-                app,
-                ...config
-            },
-            start: async() => {
-                await inst.start();
-            }
-        };
+    const v = vector({
+        config: {
+            ...config.vector,
+            id: `${app}..${part}`
+        }
+    });
+    return {
+        ...v,
+        config
     }
 };

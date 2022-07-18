@@ -9,11 +9,9 @@
             "request": "launch",
             "name": "http-server--http-client",
             "outputCapture": "std",
-            "_console": "integratedTerminal",
-            "program": "${workspaceFolder}/examples/http-server-http-client/index.js",
+            "program": "${workspaceFolder}/index.js",
             "runtimeArgs": ["--preserve-symlinks"],
-            "env": {"NODE_PATH": "${workspaceRoot}/dev/"},
-            "cwd": "${workspaceFolder}/examples/http-server-http-client"
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
         }
     ]
 }

@@ -1,0 +1,13 @@
+{
+    "client": {
+        "url": "https://example.com"
+    },
+    "server": {
+        "port": 8000,
+        "vector": {
+            "request": {
+                "waitTime": 300000
+            }
+        }
+    }
+}
