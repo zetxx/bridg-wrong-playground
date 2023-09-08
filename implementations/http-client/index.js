@@ -3,11 +3,9 @@ const {get} = require('https');
 module.exports = (props) => {
     const prev = require('../config')(props);
     const {url} = prev.config;
-    // register special method
     prev.methods.add({
         method: ['*', 'out'],
         fn: (rq) => {
-            // implement http client
             get(url, (res) => {
                 res.setEncoding('utf8');
                 let rawData = '';
