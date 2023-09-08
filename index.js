@@ -5,19 +5,17 @@ const Router = require('bridg-wrong/lib/router');
 const app = 'http.client.server';
 
 (async() => {
-    const v1 = client({
-        app: app,
+    const c = client({
+        app,
         part: 'client'
     });
-    const v2 = server({
-        app: app,
+    const s = server({
+        app,
         part: 'server'
     });
     const router = Router({
-        vectors: [v1, v2]
+        wires: [c, s]
     });
-    v1.ctx({router});
-    v2.ctx({router});
-    await v1.start();
-    await v2.start();
+
+    await router.start();
 })();

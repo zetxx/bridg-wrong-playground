@@ -1,12 +1,17 @@
 {
     "client": {
-        "url": "https://example.com"
+        "url": "https://example.com",
+        "wire": {
+            "packet": {
+                "waitTime": 75000000
+            }
+        }
     },
     "server": {
         "port": 8000,
-        "vector": {
-            "request": {
-                "waitTime": 300000
+        "wire": {
+            "packet": {
+                "waitTime": 45000000
             }
         }
     }

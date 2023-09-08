@@ -1,11 +1,11 @@
 const {get} = require('https');
 
 module.exports = (props) => {
-    const vector = require('../config')(props);
-    const {url} = vector.config;
+    const prev = require('../config')(props);
+    const {url} = prev.config;
     // register special method
-    vector.methods.add({
-        method: '*.out',
+    prev.methods.add({
+        method: ['*', 'out'],
         fn: (rq) => {
             // implement http client
             get(url, (res) => {
@@ -13,12 +13,20 @@ module.exports = (props) => {
                 let rawData = '';
                 res.on('data', (chunk) => (rawData += chunk));
                 res.on('end', () => {
-                    vector.pass({
+                    prev.pass({
                         packet: {
-                            payload: [rq.payload, rawData],
+                            payload: rawData,
+                            header: {
+                                method: rq
+                                    .header
+                                    .method
+                                    .slice(-2)
+                                    .slice(0, 1)
+                                    .concat('in')
+                            },
                             match: {
-                                idx: rq.request.idx,
-                                tag: rq.request.tag
+                                idx: rq.header.idx,
+                                tag: rq.header.tag
                             }
                         }
                     });
@@ -27,8 +35,8 @@ module.exports = (props) => {
             return rq;
         }
     });
-    vector.methods.add({
-        method: 'a.out',
+    prev.methods.add({
+        method: ['a', 'out'],
         fn: ({payload, error}) => {
             if (error) {
                 throw error;
@@ -36,8 +44,8 @@ module.exports = (props) => {
             return payload;
         }
     });
-    vector.methods.add({
-        method: 'a.in',
+    prev.methods.add({
+        method: ['a', 'in'],
         fn: ({payload, error}) => {
             if (error) {
                 throw error;
@@ -46,5 +54,10 @@ module.exports = (props) => {
         }
     });
 
-    return vector;
+    return {
+        ...prev,
+        async start(...args) {
+            return await prev.start(...args);
+        }
+    };
 };

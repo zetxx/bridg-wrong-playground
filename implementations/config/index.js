@@ -1,5 +1,5 @@
 const rc = require('rc');
-const vector = require('bridg-wrong/lib/vector');
+const Wire = require('bridg-wrong/lib/wire');
 
 module.exports = ({
     app,
@@ -7,22 +7,26 @@ module.exports = ({
 }) => {
     const config = rc(app, {
         [part]: {
-            vector: {
-                request: {
-                    waitTime: 30000
+            wire: {
+                packet: {
+                    waitTime: 35000
                 }
             }
         }
     })[part];
 
-    const v = vector({
+    const prev = Wire({
+        log: console.log,
         config: {
-            ...config.vector,
+            ...config.wire,
             id: `${app}..${part}`
         }
     });
     return {
-        ...v,
+        ...prev,
+        async start(...args) {
+            return await prev.start(...args);
+        },
         config
-    }
+    };
 };
