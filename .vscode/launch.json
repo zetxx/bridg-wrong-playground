@@ -9,9 +9,14 @@
             "request": "launch",
             "name": "http-server--http-client",
             "outputCapture": "std",
-            "program": "${workspaceFolder}/index.js",
+            "program": "${workspaceFolder}/integrations/example-http-server-client.js",
             "runtimeArgs": ["--preserve-symlinks"],
-            "env": {"NODE_PATH": "${workspaceRoot}/dev/"}
+            "env": {"NODE_PATH": "${workspaceRoot}/dev/"},
+            "args": [
+                "--methods.timeout=5000",
+                "--logger.level=trace",
+                "--http-server.koa.server.port=9000"
+            ]
         }
     ]
 }
