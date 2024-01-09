@@ -2,15 +2,14 @@
     "name": "bridg-wrong-playground",
     "description": "",
     "dependencies": {
-        "ajv": "^6.10.2",
+        "ajv": "^8.12.0",
         "serialize-error": "*",
         "uuid": "*"
     },
     "peerDependencies": {
-        "ajv": "^6.10.2",
+        "ajv": "^8.12.0",
         "bridg-wrong": "*",
         "dns-discovery": "*",
-        "immutable": ">=4.0.0-rc.12",
         "mdns-resolver": "*",
         "pg": "*",
         "rc": "*",
