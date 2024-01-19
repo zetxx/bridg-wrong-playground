@@ -16,7 +16,9 @@
         "serialize-error": "*",
         "uuid": "*"
     },
-    "devDependencies": {},
+    "devDependencies": {
+        "why-is-node-running": "^2.2.2"
+    },
     "author": "zetxx",
     "license": "MIT",
     "repository": {
