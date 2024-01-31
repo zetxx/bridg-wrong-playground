@@ -19,6 +19,7 @@
     "devDependencies": {
         "why-is-node-running": "^2.2.2"
     },
+    "scripts": {},
     "author": "zetxx",
     "license": "MIT",
     "repository": {
