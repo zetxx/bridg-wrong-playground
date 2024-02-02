@@ -9,6 +9,8 @@
     "peerDependencies": {
         "ajv": "^8.12.0",
         "bridg-wrong": "*",
+        "expose-sql-methods": "*",
+        "migration-collection": "*",
         "dns-discovery": "*",
         "mdns-resolver": "*",
         "pg": "*",
