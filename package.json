@@ -30,5 +30,6 @@
         "type": "git",
         "url": "git+https://github.com/zetxx/bridg-wrong-playground.git"
     },
-    "homepage": "https://github.com/zetxx/bridg-wrong-playground/blob/master/README.md"
+    "homepage": "https://github.com/zetxx/bridg-wrong-playground/blob/master/README.md",
+    "version": "5.2.22"
 }
