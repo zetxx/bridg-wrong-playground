@@ -21,7 +21,9 @@
         "uuid": "*"
     },
     "devDependencies": {
-        "why-is-node-running": "^2.2.2"
+        "why-is-node-running": "^2.2.2",
+        "@biomejs/biome": "1.9.4",
+        "semantic-release": "^24.2.0"
     },
     "scripts": {},
     "author": "zetxx",
