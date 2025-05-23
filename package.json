@@ -5,7 +5,7 @@
         "ajv": "*",
         "serialize-error": "*",
         "uuid": "*",
-        "pino": "^9.6.0",
+        "pino": "^9.7.0",
         "pino-pretty": "^13.0.0"
     },
     "peerDependencies": {
@@ -21,9 +21,9 @@
         "uuid": "*"
     },
     "devDependencies": {
-        "why-is-node-running": "^2.2.2",
+        "why-is-node-running": "^3.2.2",
         "@biomejs/biome": "1.9.4",
-        "semantic-release": "^24.2.0"
+        "semantic-release": "^24.2.4"
     },
     "scripts": {},
     "author": "zetxx",
